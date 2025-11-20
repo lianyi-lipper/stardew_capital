@@ -1,0 +1,45 @@
+#------------------------------------------------------------------------------
+# 项目构建输出目录
+#------------------------------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+# 忽略 Release/Debug 等构建目录
+[Dd]ebug/
+[Rr]elease/
+
+# 编译生成的文件
+*.dll
+*.exe
+*.pdb
+*.suo
+
+# -----------------------------------------------------------------------------
+# Visual Studio / VS Code / JetBrains Rider IDE 配置文件
+# -----------------------------------------------------------------------------
+# Visual Studio 用户选项文件
+*.user
+# Visual Studio 解决方案用户选项
+*.suo
+# Visual Studio 隐藏的解决方案设置文件夹
+.vs/
+
+# VSIX (Visual Studio Extension) 缓存
+.vsix/
+
+# NuGet
+# NuGet 包目录
+packages/
+# NuGet 缓存
+.nuget/
+# 恢复 NuGet 包时生成的锁定文件
+project.assets.json
+
+# Resharper / Rider 临时文件
+# Rider 的隐藏文件夹
+.idea/
+# Resharper 生成的文件
+*.dotsettings
+
+# 其他常见临时文件
+*.tmp
+*~

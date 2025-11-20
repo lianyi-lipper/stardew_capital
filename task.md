@@ -1,0 +1,47 @@
+# Stardew Capital Development Tasks
+
+- [x] **Planning & Design** <!-- id: 0 -->
+    - [x] Review file structure and requirements <!-- id: 1 -->
+    - [x] Create development roadmap (`ROADMAP.md`) <!-- id: 2 -->
+- [x] **Phase 1: Core Engine & Math** <!-- id: 3 -->
+    - [x] Setup project structure (.csproj, folders) <!-- id: 4 -->
+    - [x] Implement `Core/Time/TimeProvider` <!-- id: 5 -->
+    - [x] Implement `Core/Math/GBM` <!-- id: 6 -->
+    - [x] Implement `Core/Math/BrownianBridge` <!-- id: 7 -->
+    - [x] Create Unit Tests for Math Models <!-- id: 8 -->
+- [x] **Phase 2: Basic Market Loop** <!-- id: 9 -->
+    - [x] Implement `Domain/Instruments` & `TickData` <!-- id: 10 -->
+    - [x] Implement `Services/PriceEngine` <!-- id: 11 -->
+# Stardew Capital Development Tasks
+
+- [x] **Planning & Design** <!-- id: 0 -->
+    - [x] Review file structure and requirements <!-- id: 1 -->
+    - [x] Create development roadmap (`ROADMAP.md`) <!-- id: 2 -->
+- [x] **Phase 1: Core Engine & Math** <!-- id: 3 -->
+    - [x] Setup project structure (.csproj, folders) <!-- id: 4 -->
+    - [x] Implement `Core/Time/TimeProvider` <!-- id: 5 -->
+    - [x] Implement `Core/Math/GBM` <!-- id: 6 -->
+    - [x] Implement `Core/Math/BrownianBridge` <!-- id: 7 -->
+    - [x] Create Unit Tests for Math Models <!-- id: 8 -->
+- [x] **Phase 2: Basic Market Loop** <!-- id: 9 -->
+    - [x] Implement `Domain/Instruments` & `TickData` <!-- id: 10 -->
+    - [x] Implement `Services/PriceEngine` <!-- id: 11 -->
+    - [x] Implement `Services/MarketManager` <!-- id: 12 -->
+    - [x] Integrate with SMAPI `UpdateTicked` <!-- id: 13 -->
+- [x] **Phase 3: Hybrid UI Foundation** <!-- id: 14 -->
+    - [x] Implement `Services/WebServer` (HttpListener) <!-- id: 15 -->
+    - [x] Create `Assets/Web/index.html` with TradingView Charts <!-- id: 16 -->
+    - [x] Implement In-Game `TradingMenu` (Simple Buy/Sell) <!-- id: 25 -->
+- [x] **Phase 4: Trading System & Configuration** <!-- id: 17 -->
+    - [x] Implement `ModConfig` & Refactor Time System <!-- id: 18 -->
+    - [x] Implement `Domain/Account` (`TradingAccount`, `Position`) <!-- id: 19 -->
+    - [x] Implement `Services/BrokerageService` (Margin, Leverage) <!-- id: 26 -->
+    - [x] Update `TradingMenu` (Deposit/Withdraw, Leverage) <!-- id: 27 -->
+- [ ] **Phase 5: Integration & Persistence** <!-- id: 21 -->
+    - [x] Implement `Data/SaveModel` & `PersistenceService` <!-- id: 24 -->
+    - [x] Fix Initialization (Move to `SaveLoaded`) <!-- id: 28 -->
+    - [x] Implement `DeliveryService` (Physical Settlement) <!-- id: 23 -->
+- [x] **Phase 6: Advanced Delivery & Polish** <!-- id: 29 -->
+    - [x] Implement `ExchangeService` (ModData & Box Finding) <!-- id: 30 -->
+    - [x] Implement `ExchangeMenuController` (Inject Button into Chest Menu) <!-- id: 32 -->
+    - [x] Update `DeliveryService` to use Exchange Boxes <!-- id: 31 -->

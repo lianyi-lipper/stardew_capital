@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stardew Capital Terminal</title>
+
+    <script src="lib/lightweight-charts.standalone.production.js"></script>
+
+    <style>
+        /* ... 样式保持不变 ... */
+        body {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #4caf50;
+        }
+
+        #status {
+            font-size: 14px;
+            color: #888;
+        }
+
+        #chart-container {
+            flex-grow: 1;
+            border: 1px solid #333;
+            position: relative;
+        }
+
+        .price-tag {
+            font-size: 32px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div>
+            <h1>HedgeHarvest Terminal</h1>
+            <div id="symbol-name">PARSNIP-SPR-28</div>
+        </div>
+        <div class="price-tag" id="current-price">--.-- g</div>
+        <div id="status">Connecting...</div>
+    </header>
+
+    <div id="chart-container"></div>
+
+    <script>
+        // 【调试点 1】脚本开始运行的标志
+        console.log("Web Page Loaded. Script starting...");
+
+        // 检查库是否加载成功
+        if (typeof LightweightCharts === 'undefined') {
+            console.error("Error: LightweightCharts library did not load! Check your internet or file path.");
+            document.getElementById('status').innerText = "Error: Library Load Failed";
+            document.getElementById('status').style.color = "red";
+        } else {
+            console.log("LightweightCharts library loaded successfully.");
+
+            const chartContainer = document.getElementById('chart-container');
+            const chart = LightweightCharts.createChart(chartContainer, {
+                layout: { background: { type: 'solid', color: '#1e1e1e' }, textColor: '#d1d4dc', },
+                grid: { vertLines: { color: '#2B2B43' }, horzLines: { color: '#2B2B43' }, },
+                rightPriceScale: { borderColor: '#2B2B43', },
+                timeScale: { borderColor: '#2B2B43', timeVisible: true, secondsVisible: false, },
+            });
+
+            const lineSeries = chart.addSeries(LightweightCharts.LineSeries, {
+                color: '#2962FF',
+                lineWidth: 2,
+            });
+
+            async function updateData() {
+                try {
+                    console.log("Fetching /api/ticker..."); // 【调试点 2】发起请求前
+                    const response = await fetch('/api/ticker');
+                    console.log("Response status:", response.status); // 【调试点 3】收到响应
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                    const json = await response.json();
+                    console.log("Data received:", json); // 【调试点 4】看到数据
+
+                    if (json && json.length > 0) {
+                        const item = json[0];
+                        document.getElementById('current-price').innerText = item.price.toFixed(2) + ' g';
+                        document.getElementById('symbol-name').innerText = item.symbol;
+                        document.getElementById('status').innerText = 'Live';
+                        document.getElementById('status').style.color = '#4caf50';
+
+                        const now = Math.floor(Date.now() / 1000);
+                        lineSeries.update({ time: now, value: item.price });
+                    }
+                } catch (e) {
+                    document.getElementById('status').innerText = 'Disconnected';
+                    document.getElementById('status').style.color = '#f44336';
+                    console.error("Fetch error:", e);
+                }
+            }
+
+            setInterval(updateData, 1000);
+            updateData();
+
+            window.addEventListener('resize', () => {
+                chart.resize(chartContainer.clientWidth, chartContainer.clientHeight);
+            });
+        }
+    </script>
+</body>
+
+</html>
