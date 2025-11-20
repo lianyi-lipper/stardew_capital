@@ -3,8 +3,13 @@ using System;
 namespace StardewCapital.Core.Time
 {
     /// <summary>
-    /// The "Heart" of the market simulation.
-    /// Handles the conversion between Real Time (for frequency) and Game Time (for trends).
+    /// 混合时间时钟 - 市场模拟的心脏
+    /// 处理真实时间（控制更新频率）与游戏时间（控制价格趋势）之间的转换。
+    /// 
+    /// 核心功能：
+    /// - 提供归一化的时间进度 (0.0 - 1.0)
+    /// - 判断市场开放/关闭状态
+    /// - 检测游戏暂停状态
     /// </summary>
     public class MixedTimeClock
     {

@@ -8,6 +8,16 @@ using StardewValley;
 
 namespace StardewCapital
 {
+    /// <summary>
+    /// HedgeHarvest Mod 主入口
+    /// 负责初始化所有服务、注册事件处理器、管理Mod生命周期。
+    /// 
+    /// 架构分层：
+    /// - Core层：纯数学引擎（GBM、布朗桥、时间系统）
+    /// - Domain层：金融实体（期货、账户、仓位）
+    /// - Services层：业务逻辑（市场管理、交易执行、交割处理）
+    /// - UI层：用户界面（交易菜单、图表显示）
+    /// </summary>
     public class ModEntry : Mod
     {
         private MarketManager _marketManager = null!;
@@ -21,6 +31,18 @@ namespace StardewCapital
         private PersistenceService _persistenceService = null!;
         private DeliveryService _deliveryService = null!;
 
+        /// <summary>
+        /// Mod入口方法
+        /// SMAPI在加载Mod时自动调用，负责初始化所有组件并注册事件。
+        /// 
+        /// 初始化顺序：
+        /// 1. 加载配置文件
+        /// 2. 初始化Core服务（时间系统、价格引擎）
+        /// 3. 初始化业务服务（市场、交易、存档、交割）
+        /// 4. 启动Web服务器（可选）
+        /// 5. 注册游戏事件处理器
+        /// </summary>
+        /// <param name="helper">SMAPI提供的Helper接口</param>
         public override void Entry(IModHelper helper)
         {
             // 0. Load Config
@@ -58,27 +80,47 @@ namespace StardewCapital
             Monitor.Log("HedgeHarvest Market Initialized!", LogLevel.Info);
         }
 
+        /// <summary>
+        /// 处理每日结束事件
+        /// 触发期货合约的实物交割检查
+        /// </summary>
         private void OnDayEnding(object? sender, DayEndingEventArgs e)
         {
             _deliveryService.ProcessDailyDelivery();
         }
 
+        /// <summary>
+        /// 处理新一天开始事件
+        /// 触发市场的日更新（计算新的目标价格）
+        /// </summary>
         private void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
             _marketManager.OnNewDay();
         }
 
+        /// <summary>
+        /// 处理存档加载事件
+        /// 恢复玩家的交易账户和市场数据
+        /// </summary>
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
         {
             _persistenceService.LoadData();
             _marketManager.InitializeMarket();
         }
 
+        /// <summary>
+        /// 处理游戏存档事件
+        /// 保存玩家的交易账户数据
+        /// </summary>
         private void OnSaving(object? sender, SavingEventArgs e)
         {
             _persistenceService.SaveData();
         }
 
+        /// <summary>
+        /// 处理按键事件
+        /// F10键：打开/关闭交易菜单
+        /// </summary>
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
             // Toggle menu with F10
@@ -95,6 +137,10 @@ namespace StardewCapital
             }
         }
 
+        /// <summary>
+        /// 处理游戏每帧更新事件
+        /// 驱动市场价格的实时更新
+        /// </summary>
         private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
             // Only run if the world is loaded
@@ -104,6 +150,10 @@ namespace StardewCapital
             _marketManager.Update((int)e.Ticks);
         }
 
+        /// <summary>
+        /// 资源清理方法
+        /// 确保Web服务器在Mod卸载时正确关闭
+        /// </summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

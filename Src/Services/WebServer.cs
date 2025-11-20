@@ -9,6 +9,22 @@ using StardewModdingAPI;
 
 namespace StardewCapital.Services
 {
+    /// <summary>
+    /// Web服务器（可选功能）
+    /// 提供HTTP服务器，允许通过浏览器查看市场数据。
+    /// 
+    /// 功能：
+    /// - REST API：提供 /api/ticker 端点获取实时价格
+    /// - 静态文件服务：提供HTML/JS/CSS文件
+    /// - CORS支持：允许跨域访问
+    /// 
+    /// 端口：http://localhost:5000
+    /// 
+    /// 使用场景：
+    /// - 在浏览器中查看K线图
+    /// - 使用外部工具接入市场数据
+    /// - 多屏幕显示（游戏+Web图表）
+    /// </summary>
     public class WebServer
     {
         private readonly HttpListener _listener;
@@ -26,6 +42,10 @@ namespace StardewCapital.Services
             _listener.Prefixes.Add("http://localhost:5000/");
         }
 
+        /// <summary>
+        /// 启动Web服务器
+        /// 在后台线程中运行，不阻塞游戏主线程
+        /// </summary>
         public void Start()
         {
             try
@@ -41,6 +61,10 @@ namespace StardewCapital.Services
             }
         }
 
+        /// <summary>
+        /// 停止Web服务器
+        /// 在Mod卸载时调用
+        /// </summary>
         public void Stop()
         {
             _isRunning = false;
@@ -48,6 +72,10 @@ namespace StardewCapital.Services
             _listener.Close();
         }
 
+        /// <summary>
+        /// 主监听循环
+        /// 异步接收HTTP请求并转发到独立线程处理
+        /// </summary>
         private async Task ListenLoop()
         {
             while (_isRunning && _listener.IsListening)
@@ -55,12 +83,13 @@ namespace StardewCapital.Services
                 try
                 {
                     var context = await _listener.GetContextAsync();
-                    // Handle request on a background thread to avoid blocking the listener loop
+                    
+                    // 在后台线程处理请求，避免阻塞监听循环
                     _ = Task.Run(() => ProcessRequest(context));
                 }
                 catch (HttpListenerException)
                 {
-                    // Listener stopped
+                    // 监听器已停止，正常退出
                 }
                 catch (Exception ex)
                 {
@@ -69,69 +98,84 @@ namespace StardewCapital.Services
             }
         }
 
+        /// <summary>
+        /// 处理单个HTTP请求
+        /// </summary>
+        /// <param name="context">HTTP上下文</param>
         private void ProcessRequest(HttpListenerContext context)
-{
-    try
-    {
-        // 1. 强制显示请求日志
-        string path = context.Request.Url?.AbsolutePath.ToLower() ?? "/";
-        _monitor.Log($"[WebServer] -> Incoming Request: {path}", LogLevel.Info); 
-
-        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-
-        if (path.StartsWith("/api/"))
         {
-            HandleApiRequest(context, path);
-            // 2. 确认 API 处理完成
-            _monitor.Log($"[WebServer] API Handled: {path}", LogLevel.Info);
-        }
-        else
-        {
-            HandleStaticFileRequest(context, path);
-        }
-    }
-    catch (Exception ex)
-    {
-        // 3. 确保错误能被看见
-        _monitor.Log($"[WebServer] Error: {ex}", LogLevel.Error);
-        context.Response.StatusCode = 500;
-    }
-    finally
-    {
-        context.Response.Close();
-    }
-}
+            try
+            {
+                string path = context.Request.Url?.AbsolutePath.ToLower() ?? "/";
+                _monitor.Log($"[WebServer] Request: {path}", LogLevel.Trace);
 
+                // 添加CORS头，允许跨域访问
+                context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+
+                if (path.StartsWith("/api/"))
+                {
+                    HandleApiRequest(context, path);
+                }
+                else
+                {
+                    HandleStaticFileRequest(context, path);
+                }
+            }
+            catch (Exception ex)
+            {
+                _monitor.Log($"[WebServer] Error processing request: {ex.Message}", LogLevel.Error);
+                context.Response.StatusCode = 500;
+            }
+            finally
+            {
+                context.Response.Close();
+            }
+        }
+
+        /// <summary>
+        /// 处理API请求
+        /// </summary>
+        /// <param name="context">HTTP上下文</param>
+        /// <param name="path">请求路径</param>
         private void HandleApiRequest(HttpListenerContext context, string path)
         {
             string jsonResponse = "{}";
             
             if (path == "/api/ticker")
             {
+                // 构建市场数据JSON
                 var instruments = _marketManager.GetInstruments();
-                var data = new List<object>();
-                
                 var sb = new StringBuilder();
                 sb.Append("[");
-                for(int i=0; i<instruments.Count; i++)
+                
+                for (int i = 0; i < instruments.Count; i++)
                 {
                     var inst = instruments[i];
-                    // Use InvariantCulture to ensure dot separator for decimals
+                    // 使用InvariantCulture确保小数点格式正确（避免逗号分隔符）
                     sb.Append($"{{\"symbol\":\"{inst.Symbol}\",\"price\":{inst.CurrentPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)},\"name\":\"{inst.Name}\"}}");
                     if (i < instruments.Count - 1) sb.Append(",");
                 }
+                
                 sb.Append("]");
                 jsonResponse = sb.ToString();
             }
 
+            // 发送JSON响应
             byte[] buffer = Encoding.UTF8.GetBytes(jsonResponse);
             context.Response.ContentType = "application/json";
             context.Response.ContentLength64 = buffer.Length;
             context.Response.OutputStream.Write(buffer, 0, buffer.Length);
         }
 
+        /// <summary>
+        /// 处理静态文件请求
+        /// 从 Assets/Web 目录提供HTML、JS、CSS等文件
+        /// </summary>
+        /// <param name="context">HTTP上下文</param>
+        /// <param name="path">请求路径</param>
         private void HandleStaticFileRequest(HttpListenerContext context, string path)
         {
+            // 默认首页
             if (path == "/") path = "/index.html";
             
             string filePath = Path.Combine(_webRoot, path.TrimStart('/'));
@@ -149,6 +193,11 @@ namespace StardewCapital.Services
             }
         }
 
+        /// <summary>
+        /// 根据文件扩展名获取MIME类型
+        /// </summary>
+        /// <param name="extension">文件扩展名（包含点）</param>
+        /// <returns>MIME类型字符串</returns>
         private string GetContentType(string extension)
         {
             return extension switch
@@ -157,6 +206,9 @@ namespace StardewCapital.Services
                 ".js" => "application/javascript",
                 ".css" => "text/css",
                 ".json" => "application/json",
+                ".png" => "image/png",
+                ".jpg" => "image/jpeg",
+                ".gif" => "image/gif",
                 _ => "application/octet-stream"
             };
         }

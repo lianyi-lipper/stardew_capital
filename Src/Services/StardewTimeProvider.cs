@@ -4,7 +4,13 @@ using StardewValley;
 namespace StardewCapital.Services
 {
     /// <summary>
-    /// The bridge between Stardew Valley's game loop and our Core Time system.
+    /// 星露谷时间提供者
+    /// 作为Stardew Valley游戏循环与Core时间系统之间的桥梁。
+    /// 
+    /// 职责：
+    /// - 从Game1获取游戏时间并转换为标准化格式
+    /// - 将Stardew的时间格式（600-2600）转换为分钟和归一化比例
+    /// - 检测游戏暂停状态（菜单打开或游戏暂停）
     /// </summary>
     public class StardewTimeProvider : IGameTimeProvider
     {
@@ -39,8 +45,11 @@ namespace StardewCapital.Services
         public int TotalMinutesToday => ToMinutes(Game1.timeOfDay);
 
         /// <summary>
-        /// Helper to convert Stardew time (e.g. 630) to total minutes.
+        /// 辅助方法：将Stardew时间格式转换为总分钟数
+        /// Stardew时间格式：600 = 6:00, 630 = 6:30, 700 = 7:00
         /// </summary>
+        /// <param name="time">Stardew时间（例：1350代表13:50）</param>
+        /// <returns>从午夜0点开始的总分钟数</returns>
         private int ToMinutes(int time)
         {
             return (time / 100) * 60 + (time % 100);

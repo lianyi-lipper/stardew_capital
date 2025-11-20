@@ -1,14 +1,27 @@
 namespace StardewCapital.Core.Time
 {
+    /// <summary>
+    /// 时间常量定义
+    /// 定义市场开放时间、一天的时长等关键时间参数。
+    /// </summary>
     public static class TimeConstants
     {
-        public const int OpeningTime = 600;  // 6:00 AM
-        public const int ClosingTime = 2600; // 2:00 AM (next day)
+        /// <summary>开盘时间：早上6点 (Stardew Valley 时间格式：600)</summary>
+        public const int OpeningTime = 600;
         
-        // Total minutes in a standard Stardew day (6am to 2am = 20 hours)
-        public const int MinutesPerDay = 20 * 60; 
+        /// <summary>收盘时间：次日凌晨2点 (Stardew Valley 时间格式：2600)</summary>
+        public const int ClosingTime = 2600;
+        
+        /// <summary>
+        /// Stardew Valley 一天的总分钟数
+        /// 从早上6点到次日凌晨2点 = 20小时 = 1200分钟
+        /// </summary>
+        public const int MinutesPerDay = 20 * 60;
 
-        // Real-time tick interval for market updates (in seconds)
+        /// <summary>
+        /// 市场更新的真实时间间隔（秒）
+        /// 控制价格刷新频率，避免过于频繁的更新
+        /// </summary>
         public const double RealTimeTickInterval = 0.7;
     }
 }

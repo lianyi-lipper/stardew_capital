@@ -1,8 +1,13 @@
 namespace StardewCapital.Core.Time
 {
     /// <summary>
-    /// Provides time information to the Core layer without depending on StardewValley.
-    /// This allows the Core layer to be unit tested in isolation.
+    /// 游戏时间提供者接口
+    /// 为Core层提供时间信息，且不依赖于StardewValley命名空间。
+    /// 
+    /// 设计目的：
+    /// 1. 依赖反转：Core层不直接依赖Game1，而是依赖此接口
+    /// 2. 可测试性：可以替换为Mock实现，进行单元测试
+    /// 3. 灵活性：支持多种时间源（游戏时间、真实时间、测试时间）
     /// </summary>
     public interface IGameTimeProvider
     {
