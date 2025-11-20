@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Objects;
 
-namespace HedgeHarvest.Services
+namespace StardewCapital.Services
 {
     public class ExchangeService
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace HedgeHarvest.Domain.Market
+namespace StardewCapital.Domain.Market
 {
     /// <summary>
     /// Represents a single candle or data point in the price history.

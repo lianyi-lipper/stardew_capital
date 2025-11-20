@@ -1,8 +1,8 @@
-using HedgeHarvest.Data;
-using HedgeHarvest.Services;
+using StardewCapital.Data;
+using StardewCapital.Services;
 using StardewModdingAPI;
 
-namespace HedgeHarvest.Services
+namespace StardewCapital.Services
 {
     public class PersistenceService
     {

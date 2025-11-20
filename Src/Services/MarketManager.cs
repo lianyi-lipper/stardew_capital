@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using HedgeHarvest.Core.Time;
-using HedgeHarvest.Domain.Instruments;
+using StardewCapital.Core.Time;
+using StardewCapital.Domain.Instruments;
 using StardewModdingAPI;
 
-namespace HedgeHarvest.Services
+namespace StardewCapital.Services
 {
     public class MarketManager
     {

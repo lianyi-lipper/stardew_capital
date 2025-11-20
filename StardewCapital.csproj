@@ -5,8 +5,8 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>HedgeHarvest</RootNamespace>
-    <AssemblyName>HedgeHarvest</AssemblyName>
+    <RootNamespace>StardewCapital</RootNamespace>
+    <AssemblyName>StardewCapital</AssemblyName>
     <OutputType>Library</OutputType>
   </PropertyGroup>
 

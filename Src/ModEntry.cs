@@ -1,12 +1,12 @@
 using System;
-using HedgeHarvest.Core.Time;
-using HedgeHarvest.Services;
-using HedgeHarvest.UI;
+using StardewCapital.Core.Time;
+using StardewCapital.Services;
+using StardewCapital.UI;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 
-namespace HedgeHarvest
+namespace StardewCapital
 {
     public class ModEntry : Mod
     {
