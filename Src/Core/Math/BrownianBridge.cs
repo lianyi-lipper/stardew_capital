@@ -1,7 +1,7 @@
 using System;
-using HedgeHarvest.Core.Time;
+using StardewCapital.Core.Time;
 
-namespace HedgeHarvest.Core.Math
+namespace StardewCapital.Core.Math
 {
     /// <summary>
     /// Model 4: Discrete Brownian Bridge

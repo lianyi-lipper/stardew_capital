@@ -1,6 +1,6 @@
 using System;
 
-namespace HedgeHarvest.Core.Math
+namespace StardewCapital.Core.Math
 {
     public static class StatisticsUtils
     {

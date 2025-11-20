@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HedgeHarvest.Domain.Account;
-using HedgeHarvest.Domain.Instruments;
+using StardewCapital.Domain.Account;
+using StardewCapital.Domain.Instruments;
 using StardewModdingAPI;
 using StardewValley;
 
 using Microsoft.Xna.Framework;
 
-namespace HedgeHarvest.Services
+namespace StardewCapital.Services
 {
     public class DeliveryService
     {

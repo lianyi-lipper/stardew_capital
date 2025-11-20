@@ -1,6 +1,6 @@
 using System;
 
-namespace HedgeHarvest.Domain.Account
+namespace StardewCapital.Domain.Account
 {
     public class Position
     {

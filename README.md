@@ -12,13 +12,13 @@
 Plaintext
 
 ```
-HedgeHarvest/
+StardewCapital/
 ├── Assets/                  # [资源] 贴图、数据JSON、音效
 │   ├── Data/                # 初始配置 (e.g., 基础商品定义)
 │   └── Sprites/             # K线图背景、UI图标
 ├── i18n/                    # [国际化] 支持中文/英文切换 (default.json, zh.json)
 ├── Manifest.json            # SMAPI 必须的清单文件
-├── HedgeHarvest.csproj      # C# 项目文件
+├── StardewCapital.csproj      # C# 项目文件
 └── Src/                     # [源代码] 核心代码逻辑
     ├── Core/                # [核心层] 纯数学与底层引擎 (不依赖 Stardew 代码)
     ├── Domain/              # [领域层] 金融业务逻辑 (定义什么是期货、什么是订单簿)

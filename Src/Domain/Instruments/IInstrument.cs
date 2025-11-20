@@ -1,4 +1,4 @@
-namespace HedgeHarvest.Domain.Instruments
+namespace StardewCapital.Domain.Instruments
 {
     /// <summary>
     /// Represents any tradable asset in the market (Futures, Stocks, Options).

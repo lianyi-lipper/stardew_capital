@@ -1,6 +1,6 @@
 using System;
 
-namespace HedgeHarvest.Core.Time
+namespace StardewCapital.Core.Time
 {
     /// <summary>
     /// The "Heart" of the market simulation.

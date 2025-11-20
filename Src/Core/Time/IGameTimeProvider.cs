@@ -1,4 +1,4 @@
-namespace HedgeHarvest.Core.Time
+namespace StardewCapital.Core.Time
 {
     /// <summary>
     /// Provides time information to the Core layer without depending on StardewValley.

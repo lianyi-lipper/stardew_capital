@@ -1,4 +1,4 @@
-using HedgeHarvest.Services;
+using StardewCapital.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -7,7 +7,7 @@ using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
-namespace HedgeHarvest.UI
+namespace StardewCapital.UI
 {
     public class ExchangeMenuController
     {

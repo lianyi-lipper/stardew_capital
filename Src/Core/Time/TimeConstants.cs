@@ -1,4 +1,4 @@
-namespace HedgeHarvest.Core.Time
+namespace StardewCapital.Core.Time
 {
     public static class TimeConstants
     {

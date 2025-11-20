@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using HedgeHarvest.Domain.Account;
+using StardewCapital.Domain.Account;
 
-namespace HedgeHarvest.Data
+namespace StardewCapital.Data
 {
     public class SaveModel
     {

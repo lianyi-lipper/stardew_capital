@@ -1,4 +1,4 @@
-namespace HedgeHarvest.Domain.Instruments
+namespace StardewCapital.Domain.Instruments
 {
     public class CommodityFutures : IInstrument
     {

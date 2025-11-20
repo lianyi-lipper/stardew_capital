@@ -1,4 +1,4 @@
-namespace HedgeHarvest
+namespace StardewCapital
 {
     public class ModConfig
     {

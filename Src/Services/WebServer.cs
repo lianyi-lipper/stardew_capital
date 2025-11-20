@@ -4,10 +4,10 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using HedgeHarvest.Domain.Instruments;
+using StardewCapital.Domain.Instruments;
 using StardewModdingAPI;
 
-namespace HedgeHarvest.Services
+namespace StardewCapital.Services
 {
     public class WebServer
     {

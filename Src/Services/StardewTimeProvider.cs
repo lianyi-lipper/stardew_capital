@@ -1,7 +1,7 @@
-using HedgeHarvest.Core.Time;
+using StardewCapital.Core.Time;
 using StardewValley;
 
-namespace HedgeHarvest.Services
+namespace StardewCapital.Services
 {
     /// <summary>
     /// The bridge between Stardew Valley's game loop and our Core Time system.

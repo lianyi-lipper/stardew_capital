@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HedgeHarvest.Services;
+using StardewCapital.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Menus;
 using StardewModdingAPI;
 
-namespace HedgeHarvest.UI
+namespace StardewCapital.UI
 {
     public class TradingMenu : IClickableMenu
     {
