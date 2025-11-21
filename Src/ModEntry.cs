@@ -24,6 +24,9 @@ namespace StardewCapital
         private MixedTimeClock _clock = null!;
         private StardewTimeProvider _timeProvider = null!;
         private PriceEngine _priceEngine = null!;
+        private FundamentalEngine _fundamentalEngine = null!;
+        private ConvenienceYieldService _convenienceYieldService = null!;
+        private NewsGenerator _newsGenerator = null!;
 
         private WebServer _webServer = null!;
         private ModConfig _config = null!;
@@ -51,10 +54,13 @@ namespace StardewCapital
             // 1. Initialize Core Services
             _timeProvider = new StardewTimeProvider(_config);
             _clock = new MixedTimeClock(_timeProvider, _config);
-            _priceEngine = new PriceEngine(_clock);
+            _priceEngine = new PriceEngine(_clock, _config);
+            _fundamentalEngine = new FundamentalEngine(Monitor);
+            _convenienceYieldService = new ConvenienceYieldService(Monitor);
+            _newsGenerator = new NewsGenerator(helper, Monitor);
             
             // 2. Initialize Market Manager
-            _marketManager = new MarketManager(Monitor, _clock, _priceEngine);
+            _marketManager = new MarketManager(Monitor, _clock, _priceEngine, _fundamentalEngine, _convenienceYieldService, _newsGenerator, _config);
 
             // 3. Initialize Brokerage Service
             _brokerageService = new BrokerageService(_marketManager, Monitor);

@@ -17,11 +17,29 @@ namespace StardewCapital.Domain.Instruments
         /// <summary>显示名称，例："防风草期货 (春季28号)"</summary>
         public string Name { get; private set; }
         
+        /// <summary>商品名称（用于 FundamentalEngine 查询），例："Parsnip"</summary>
+        public string CommodityName { get; private set; }
+        
         /// <summary>标的物品ID（Stardew Valley的物品ID，例："24"代表防风草）</summary>
         public string UnderlyingItemId { get; private set; }
         
-        /// <summary>当前市场价格（金币/单位）</summary>
+        /// <summary>
+        /// 现货价格（S_t），即基本面价值
+        /// 由 FundamentalEngine 计算，代表"如果今天现货市场交易"的价格
+        /// </summary>
         public double CurrentPrice { get; set; }
+
+        /// <summary>
+        /// 期货价格（F_t），基于持有成本模型计算
+        /// 由 PriceEngine.CalculateFuturesPrice() 计算
+        /// 这是玩家在期货市场实际交易的价格
+        /// </summary>
+        /// <remarks>
+        /// 期货价格与现货价格的关系（基差）：
+        /// - Contango (升水): F_t > S_t，持有成本高于便利收益
+        /// - Backwardation (贴水): F_t < S_t，便利收益高于持有成本
+        /// </remarks>
+        public double FuturesPrice { get; set; }
         
         /// <summary>保证金比例（默认0.1，即10%保证金）</summary>
         public double MarginRatio { get; private set; }
@@ -44,9 +62,11 @@ namespace StardewCapital.Domain.Instruments
         {
             UnderlyingItemId = underlyingItemId;
             Name = name;
+            CommodityName = name; // 添加：用于FundamentalEngine查询
             DeliverySeason = season;
             DeliveryDay = deliveryDay;
             CurrentPrice = initialPrice;
+            FuturesPrice = initialPrice; // 初始值与现货价格相同，后续由PriceEngine计算
             
             // 生成合约代码：商品名-季节(前3字母)-交割日
             // 例：PARSNIP-SPR-28 代表 防风草-春季-28号交割

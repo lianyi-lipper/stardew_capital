@@ -1,0 +1,331 @@
+{
+  "news_items": [
+    {
+      "id": "pest_crisis_001",
+      "title": "害虫危机",
+      "description": "🐛 害虫危机爆发！{0}遭受虫害，大量减产。",
+      "severity": "high",
+      "news_type": "PestCrisis",
+      "impact": {
+        "demand_impact": 0,
+        "supply_impact": -2500,
+        "price_multiplier": 1.0,
+        "confidence_impact": -0.05,
+        "volatility_impact": 0.1
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables",
+          "fruits"
+        ],
+        "is_global": false,
+        "regions": [
+          "pelican_town"
+        ]
+      },
+      "timing": {
+        "announcement_day": 0,
+        "effective_days": [
+          0,
+          28
+        ]
+      },
+      "conditions": {
+        "probability": 0.15,
+        "prerequisites": [],
+        "random_range": [
+          -500,
+          500
+        ]
+      }
+    },
+    {
+      "id": "bumper_harvest_001",
+      "title": "大丰收",
+      "description": "🌾 今年大丰收！{0}产量激增，市场供应充足。",
+      "severity": "medium",
+      "news_type": "BumperHarvest",
+      "impact": {
+        "demand_impact": 0,
+        "supply_impact": 3000,
+        "price_multiplier": 1.0,
+        "confidence_impact": 0.03,
+        "volatility_impact": -0.05
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables",
+          "grains"
+        ],
+        "is_global": false,
+        "regions": [
+          "pelican_town"
+        ]
+      },
+      "timing": {
+        "announcement_day": 0,
+        "effective_days": [
+          0,
+          28
+        ]
+      },
+      "conditions": {
+        "probability": 0.2,
+        "prerequisites": [],
+        "random_range": [
+          -400,
+          400
+        ]
+      }
+    },
+    {
+      "id": "zuzu_order_001",
+      "title": "Zuzu市大订单",
+      "description": "📦 Zuzu市发来大订单！{0}需求暴涨。",
+      "severity": "high",
+      "news_type": "ZuzuCityOrder",
+      "impact": {
+        "demand_impact": 3000,
+        "supply_impact": 0,
+        "price_multiplier": 1.0,
+        "confidence_impact": 0.1,
+        "volatility_impact": 0.05
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables"
+        ],
+        "is_global": false,
+        "regions": [
+          "pelican_town"
+        ]
+      },
+      "timing": {
+        "announcement_day": 0,
+        "effective_days": [
+          0,
+          14
+        ]
+      },
+      "conditions": {
+        "probability": 0.2,
+        "prerequisites": [],
+        "random_range": [
+          -200,
+          200
+        ]
+      }
+    },
+    {
+      "id": "drought_001",
+      "title": "严重干旱",
+      "description": "☀️ 严重干旱来袭！{0}减产严重，预计供应短缺。",
+      "severity": "critical",
+      "news_type": "Drought",
+      "impact": {
+        "demand_impact": 0,
+        "supply_impact": -3500,
+        "price_multiplier": 1.0,
+        "confidence_impact": -0.08,
+        "volatility_impact": 0.15
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables",
+          "fruits",
+          "grains"
+        ],
+        "is_global": false,
+        "regions": [
+          "pelican_town"
+        ]
+      },
+      "timing": {
+        "announcement_day": 0,
+        "effective_days": [
+          0,
+          28
+        ]
+      },
+      "conditions": {
+        "probability": 0.1,
+        "prerequisites": [],
+        "random_range": [
+          -600,
+          600
+        ]
+      }
+    },
+    {
+      "id": "flood_001",
+      "title": "洪水灾害",
+      "description": "🌊 洪水来袭！{0}田地被淹，产量大幅下降。",
+      "severity": "high",
+      "news_type": "Flood",
+      "impact": {
+        "demand_impact": 0,
+        "supply_impact": -2000,
+        "price_multiplier": 1.0,
+        "confidence_impact": -0.06,
+        "volatility_impact": 0.12
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables",
+          "grains"
+        ],
+        "is_global": false,
+        "regions": [
+          "pelican_town"
+        ]
+      },
+      "timing": {
+        "announcement_day": 0,
+        "effective_days": [
+          0,
+          21
+        ]
+      },
+      "conditions": {
+        "probability": 0.12,
+        "prerequisites": [],
+        "random_range": [
+          -400,
+          400
+        ]
+      }
+    },
+    {
+      "id": "festival_001",
+      "title": "节日庆典",
+      "description": "🎉 节日庆典即将举行！{0}消费需求大增。",
+      "severity": "medium",
+      "news_type": "Festival",
+      "impact": {
+        "demand_impact": 1500,
+        "supply_impact": 0,
+        "price_multiplier": 1.0,
+        "confidence_impact": 0.05,
+        "volatility_impact": 0.03
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables",
+          "fruits",
+          "flowers"
+        ],
+        "is_global": false,
+        "regions": [
+          "pelican_town"
+        ]
+      },
+      "timing": {
+        "announcement_day": 0,
+        "effective_days": [
+          0,
+          7
+        ]
+      },
+      "conditions": {
+        "probability": 0.15,
+        "prerequisites": [],
+        "random_range": [
+          -200,
+          200
+        ]
+      }
+    },
+    {
+      "id": "mayor_promotion_001",
+      "title": "市长推广计划",
+      "description": "📣 市长推广计划启动！鼓励消费{0}，需求上升。",
+      "severity": "medium",
+      "news_type": "MayorPromotion",
+      "impact": {
+        "demand_impact": 2000,
+        "supply_impact": 0,
+        "price_multiplier": 1.0,
+        "confidence_impact": 0.07,
+        "volatility_impact": 0.02
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables",
+          "fruits"
+        ],
+        "is_global": false,
+        "regions": [
+          "pelican_town"
+        ]
+      },
+      "timing": {
+        "announcement_day": 0,
+        "effective_days": [
+          0,
+          14
+        ]
+      },
+      "conditions": {
+        "probability": 0.18,
+        "prerequisites": [],
+        "random_range": [
+          -300,
+          300
+        ]
+      }
+    },
+    {
+      "id": "storage_spoilage_001",
+      "title": "储存事故",
+      "description": "🗑️ 储存设施出现问题！部分{0}库存腐坏，供应减少。",
+      "severity": "low",
+      "news_type": "StorageSpoilage",
+      "impact": {
+        "demand_impact": 0,
+        "supply_impact": -800,
+        "price_multiplier": 1.0,
+        "confidence_impact": -0.02,
+        "volatility_impact": 0.05
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables",
+          "fruits"
+        ],
+        "is_global": false,
+        "regions": [
+          "pelican_town"
+        ]
+      },
+      "timing": {
+        "announcement_day": 0,
+        "effective_days": [
+          0,
+          3
+        ]
+      },
+      "conditions": {
+        "probability": 0.12,
+        "prerequisites": [],
+        "random_range": [
+          -100,
+          100
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "schema_version": "1.0",
+    "game_version": "1.5",
+    "last_updated": "2025-01-21",
+    "description": "新闻事件配置文件 - Stardew Capital Mod (使用正确的NewsType枚举)"
+  }
+}

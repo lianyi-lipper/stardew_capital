@@ -96,7 +96,11 @@ namespace StardewCapital.Services
                 return;
             }
 
-            decimal price = (decimal)instrument.CurrentPrice;
+            // 期货合约使用期货价格交易，其他产品使用现货价格
+            decimal price = instrument is CommodityFutures futures
+                ? (decimal)futures.FuturesPrice
+                : (decimal)instrument.CurrentPrice;
+            
             decimal requiredMargin = (price * Math.Abs(quantity)) / leverage;
 
             var prices = GetCurrentPrices();
@@ -156,7 +160,11 @@ namespace StardewCapital.Services
             var dict = new Dictionary<string, decimal>();
             foreach (var inst in _marketManager.GetInstruments())
             {
-                dict[inst.Symbol] = (decimal)inst.CurrentPrice;
+                // 期货合约使用期货价格，其他产品使用现货价格
+                decimal price = inst is CommodityFutures futures
+                    ? (decimal)futures.FuturesPrice
+                    : (decimal)inst.CurrentPrice;
+                dict[inst.Symbol] = price;
             }
             return dict;
         }

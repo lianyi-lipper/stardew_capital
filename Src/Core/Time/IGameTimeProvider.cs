@@ -12,24 +12,24 @@ namespace StardewCapital.Core.Time
     public interface IGameTimeProvider
     {
         /// <summary>
-        /// Gets the current time of day in the game (e.g., 600 for 6:00 AM, 1350 for 1:50 PM).
+        /// 获取游戏当前时间（例如：600表示早上6点，1350表示下午1点50分）
         /// </summary>
         int CurrentTimeOfDay { get; }
 
         /// <summary>
-        /// Gets the normalized time ratio from 0.0 (Start of Day) to 1.0 (End of Day).
-        /// Useful for interpolation and progress calculations.
+        /// 获取归一化的时间比例，从0.0（一天开始）到1.0（一天结束）
+        /// 用于插值计算和进度计算
         /// </summary>
         double TimeRatio { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the game is currently paused.
+        /// 获取游戏当前是否处于暂停状态
         /// </summary>
         bool IsPaused { get; }
 
         /// <summary>
-        /// Gets the total number of minutes played in the current day.
-        /// Useful for continuous time calculations.
+        /// 获取当前游戏日已经过的总分钟数
+        /// 用于连续时间计算
         /// </summary>
         int TotalMinutesToday { get; }
     }

@@ -23,7 +23,7 @@ namespace StardewCapital.Core.Time
         }
 
         /// <summary>
-        /// Gets the current normalized time progress (0.0 to 1.0) for the trading day.
+        /// 获取交易日的当前归一化时间进度（0.0到1.0）
         /// </summary>
         public double GetDayProgress()
         {
@@ -31,7 +31,7 @@ namespace StardewCapital.Core.Time
         }
 
         /// <summary>
-        /// Calculates the remaining time (T - t) for the day, normalized.
+        /// 计算当日剩余时间（T - t），归一化后的值
         /// </summary>
         public double GetTimeRemaining()
         {
@@ -39,7 +39,7 @@ namespace StardewCapital.Core.Time
         }
 
         /// <summary>
-        /// Checks if the market is currently open.
+        /// 检查市场当前是否开放
         /// </summary>
         public bool IsMarketOpen()
         {
@@ -48,7 +48,7 @@ namespace StardewCapital.Core.Time
         }
 
         /// <summary>
-        /// Checks if the game time is paused.
+        /// 检查游戏时间是否暂停
         /// </summary>
         public bool IsPaused()
         {

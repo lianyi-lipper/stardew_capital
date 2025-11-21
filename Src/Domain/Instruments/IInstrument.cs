@@ -16,28 +16,28 @@ namespace StardewCapital.Domain.Instruments
     public interface IInstrument
     {
         /// <summary>
-        /// Unique symbol, e.g., "PARSNIP-SPR-28".
+        /// 唯一标识符，例如："PARSNIP-SPR-28"
         /// </summary>
         string Symbol { get; }
 
         /// <summary>
-        /// Display name, e.g., "Parsnip Futures (Spring 28)".
+        /// 显示名称，例如："防风草期货 (春季28号)"
         /// </summary>
         string Name { get; }
 
         /// <summary>
-        /// The underlying item ID in Stardew Valley (e.g., "24" for Parsnip).
+        /// 标的物品在星露谷中的ID（例如："24"代表防风草）
         /// </summary>
         string UnderlyingItemId { get; }
 
         /// <summary>
-        /// Current market price per unit.
+        /// 当前市场价格（每单位）
         /// </summary>
         double CurrentPrice { get; set; }
 
         /// <summary>
-        /// Margin requirement ratio (0.0 to 1.0).
-        /// Futures might be 0.1 (10%), Stocks 1.0 (100%).
+        /// 保证金要求比例（0.0到1.0）
+        /// 期货可能是0.1（10%），股票是1.0（100%）
         /// </summary>
         double MarginRatio { get; }
     }

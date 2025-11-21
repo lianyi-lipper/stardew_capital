@@ -42,43 +42,27 @@
 
 ### **阶段 7：完善价格模型系统（P0 - 最高优先级）** <!-- id: 33 -->
 
-#### 7.1 模型一：基本面价值计算引擎 <!-- id: 34 -->
-- [ ] 创建 `Domain/Market/NewsEvent.cs` - 新闻事件数据模型 <!-- id: 35 -->
-- [ ] 创建 `Domain/Market/CommodityConfig.cs` - 商品配置（基础价格/供需） <!-- id: 36 -->
-- [ ] 创建 `Services/FundamentalEngine.cs` - 基本面计算引擎 <!-- id: 37 -->
-    - [ ] 实现 `CalculateFundamentalValue()` - 根据供需公式计算 S_T <!-- id: 38 -->
-    - [ ] 实现 `CalculateDemand()` - 累加基础需求和新闻影响 <!-- id: 39 -->
-    - [ ] 实现 `CalculateSupply()` - 累加基础供给和新闻影响 <!-- id: 40 -->
-    - [ ] 实现 `GetSeasonalMultiplier()` - 季节性乘数（温室作物） <!-- id: 41 -->
-- [ ] 重构 `MarketManager.OnNewDay()` - 使用 FundamentalEngine 替代硬编码 <!-- id: 42 -->
-
-#### 7.2 模型三：期货定价引擎（持有成本模型） <!-- id: 43 -->
-- [ ] 扩展 `PriceEngine.cs` - 添加期货价格计算 <!-- id: 44 -->
-    - [ ] 实现 `CalculateFuturesPrice()` - F_t = S_t × e^(r+φ-q)×τ <!-- id: 45 -->
-    - [ ] 添加无风险利率 r、仓储成本 φ 配置 <!-- id: 46 -->
-- [ ] 创建 `Services/ConvenienceYieldService.cs` - 便利收益率计算 <!-- id: 47 -->
-    - [ ] 实现 `GetConvenienceYield()` - 基础收益率 <!-- id: 48 -->
-    - [ ] 实现 `CheckNPCBirthday()` - NPC生日提升便利收益 <!-- id: 49 -->
-    - [ ] 实现 `CheckCommunityBundle()` - 社区中心任务影响 <!-- id: 50 -->
-- [ ] 修改 `CommodityFutures.cs` - 添加 `FuturesPrice` 属性（与 `CurrentPrice` 区分） <!-- id: 51 -->
-- [ ] 更新 `BrokerageService` - 使用期货价格而非现货价格交易 <!-- id: 52 -->
+    - [x] 实现 `CheckNPCBirthday()` - NPC生日提升便利收益 <!-- id: 49 -->
+    - [x] 实现 `CheckCommunityBundle()` - 社区中心任务影响 <!-- id: 50 -->
+- [x] 修改 `CommodityFutures.cs` - 添加 `FuturesPrice` 属性（与 `CurrentPrice` 区分） <!-- id: 51 -->
+- [x] 更新 `BrokerageService` - 使用期货价格而非现货价格交易 <!-- id: 52 -->
 
 ---
 
 ### **阶段 8：新闻与事件系统（P1 - 高优先级）** <!-- id: 53 -->
 
-- [ ] 设计新闻类型枚举 `NewsType` (害虫/丰收/订单/干旱/节日) <!-- id: 54 -->
-- [ ] 创建 `Services/NewsGenerator.cs` - 随机新闻生成器 <!-- id: 55 -->
-    - [ ] 实现 `GenerateDailyNews()` - 每日新闻触发（30%概率） <!-- id: 56 -->
-    - [ ] 为每种新闻类型配置 `DemandImpact` 和 `SupplyImpact` <!-- id: 57 -->
-    - [ ] 添加新闻描述文本（支持本地化） <!-- id: 58 -->
-- [ ] 集成到 `MarketManager.OnNewDay()` <!-- id: 59 -->
-    - [ ] 生成新闻事件 <!-- id: 60 -->
-    - [ ] 更新新闻历史列表 <!-- id: 61 -->
-    - [ ] 触发 `FundamentalEngine` 重新计算基本面 <!-- id: 62 -->
-    - [ ] 触发日内目标价更新（用于模型四） <!-- id: 63 -->
-- [ ] 在 `TradingMenu` 中显示今日新闻 <!-- id: 64 -->
-- [ ] 创建配置文件 `Assets/news_config.json` - 新闻概率和影响参数 <!-- id: 65 -->
+- [x] ~~设计新闻类型枚举 `NewsType` (害虫/丰收/订单/干旱/节日)~~ <!-- id: 54 -->
+- [x] ~~创建 `Services/NewsGenerator.cs` - 随机新闻生成器~~ <!-- id: 55 -->
+    - [x] ~~实现 `GenerateDailyNews()` - 每日新闻触发（基于JSON配置概率）~~ <!-- id: 56 -->
+    - [x] ~~为每种新闻类型配置 `DemandImpact` 和 `SupplyImpact`~~ <!-- id: 57 -->
+    - [x] ~~添加新闻描述文本（支持本地化）~~ <!-- id: 58 -->
+- [x] ~~集成到 `MarketManager.OnNewDay()`~~ <!-- id: 59 -->
+    - [x] ~~生成新闻事件~~ <!-- id: 60 -->
+    - [x] ~~更新新闻历史列表~~ <!-- id: 61 -->
+    - [x] ~~触发 `FundamentalEngine` 重新计算基本面~~ <!-- id: 62 -->
+    - [x] ~~触发日内目标价更新（用于模型四）~~ <!-- id: 63 -->
+- [x] ~~在 `TradingMenu` 中显示今日新闻~~ <!-- id: 64 -->
+- [x] ~~创建配置文件 `Assets/news_config.json` - 新闻概率和影响参数~~ <!-- id: 65 -->
 
 ---
 
@@ -99,7 +83,7 @@
     - [ ] 添加冲击衰减机制（每帧 × 0.95） <!-- id: 79 -->
 - [ ] 实现剧本切换逻辑 <!-- id: 80 -->
     - [ ] 创建 `ScenarioManager` - 每天或每几小时随机切换剧本 <!-- id: 81 -->
-    - [ ] 在电视频道显示当前市场情绪 <!-- id: 82 -->
+    - [ ] 在新闻tab界面显示当前市场情绪 <!-- id: 82 -->
 
 #### 9.2 集成到价格引擎 <!-- id: 83 -->
 - [ ] 修改 `PriceEngine.UpdatePrice()` <!-- id: 84 -->
@@ -251,3 +235,35 @@
 
 5. **全面测试** (阶段13)
    - 确保所有功能按设计工作
+
+---
+
+## 📌 未来优化项（技术债务）
+
+> **说明**: 以下功能在主要阶段中采用了简化实现，不影响核心机制验证，但应在后续版本中完善。
+
+### 便利收益率系统优化 <!-- id: 176 -->
+- [ ] 实现社区中心Bundle的精确检查 <!-- id: 177 -->
+    - [ ] 读取 `Bundles.json` 或使用 `CommunityCenter.bundleData` API <!-- id: 178 -->
+    - [ ] 精确匹配当前未完成的Bundle需求物品 <!-- id: 179 -->
+    - [ ] 根据Bundle紧急程度动态调整便利收益率加成 <!-- id: 180 -->
+    - **当前状态**: `ConvenienceYieldService.CheckCommunityBundleBonus()` 返回固定值 0.5%
+    - **目标**: 动态检测，例如"秋季收获Bundle"需要南瓜时，南瓜的便利收益率提升 5-10%
+
+### 期货合约跨季节支持 <!-- id: 181 -->
+- [ ] 实现跨季节的到期日计算 <!-- id: 182 -->
+    - [ ] 创建日历计算工具类 `DateUtils.cs` <!-- id: 183 -->
+    - [ ] 支持跨季节合约（例如：春季开仓，夏季28日交割） <!-- id: 184 -->
+    - [ ] 处理闰年和特殊日期逻辑 <!-- id: 185 -->
+    - **当前状态**: `MarketManager.CalculateDaysToMaturity()` 仅支持同季节内合约
+    - **目标**: 允许玩家交易长期合约（例如：春1开仓，秋28交割，持有期 = 3×28 天）
+
+---
+
+## 🔢 更新后的进度总览
+
+| 项目 | 数量 |
+|------|------|
+| 主要阶段任务 | ~128 项 |
+| 未来优化任务 | 10 项 |
+| **总计** | **~138 项** |
