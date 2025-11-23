@@ -9,7 +9,7 @@ using StardewValley;
 namespace StardewCapital
 {
     /// <summary>
-    /// HedgeHarvest Mod 主入口
+    /// StardewCapital Mod 主入口
     /// 负责初始化所有服务、注册事件处理器、管理Mod生命周期。
     /// 
     /// 架构分层：
@@ -27,6 +27,8 @@ namespace StardewCapital
         private FundamentalEngine _fundamentalEngine = null!;
         private ConvenienceYieldService _convenienceYieldService = null!;
         private NewsGenerator _newsGenerator = null!;
+        private ScenarioManager _scenarioManager = null!;
+        private ImpactService _impactService = null!;
 
         private WebServer _webServer = null!;
         private ModConfig _config = null!;
@@ -59,11 +61,32 @@ namespace StardewCapital
             _convenienceYieldService = new ConvenienceYieldService(Monitor);
             _newsGenerator = new NewsGenerator(helper, Monitor);
             
+            // 1.5 Initialize Impact System (Phase 9)
+            _scenarioManager = new ScenarioManager(Monitor);
+            _impactService = new ImpactService(Monitor);
+            
+            // Load impact system configuration
+            var impactConfig = helper.Data.ReadJsonFile<ImpactConfig>("Assets/impact_config.json") ?? new ImpactConfig();
+            _impactService.Configure(
+                impactConfig.DecayRate,
+                impactConfig.MovingAveragePeriod,
+                impactConfig.MaxImpactClamp
+            );
+            _scenarioManager.SetSwitchProbability(impactConfig.ScenarioSwitchProbability);
+            Monitor.Log($"[Impact] Loaded config: Decay={impactConfig.DecayRate}, MA={impactConfig.MovingAveragePeriod}, SwitchProb={impactConfig.ScenarioSwitchProbability}", LogLevel.Info);
+            
             // 2. Initialize Market Manager
-            _marketManager = new MarketManager(Monitor, _clock, _priceEngine, _fundamentalEngine, _convenienceYieldService, _newsGenerator, _config);
+            _marketManager = new MarketManager(
+                Monitor, _clock, _priceEngine, _fundamentalEngine, 
+                _convenienceYieldService, _newsGenerator,
+                _impactService, _scenarioManager, _config);
 
             // 3. Initialize Brokerage Service
-            _brokerageService = new BrokerageService(_marketManager, Monitor);
+            _brokerageService = new BrokerageService(_marketManager, _impactService, Monitor);
+            
+            // ✅ 重要：设置 BrokerageService 引用，用于订单结算回调
+            // 必须在 _marketManager.InitializeMarket() 之前调用，确保订单簿事件正确订阅
+            _marketManager.SetBrokerageService(_brokerageService);
 
             // 4. Initialize Persistence & Delivery
             _persistenceService = new PersistenceService(helper, Monitor, _brokerageService);
@@ -72,7 +95,7 @@ namespace StardewCapital
             _deliveryService = new DeliveryService(Monitor, _brokerageService, _marketManager, exchangeService);
 
             // 5. Initialize Web Server
-            _webServer = new WebServer(Monitor, _marketManager, helper.DirectoryPath);
+            _webServer = new WebServer(Monitor, _marketManager, _brokerageService, helper.DirectoryPath);
             _webServer.Start();
 
             // Events
@@ -83,7 +106,7 @@ namespace StardewCapital
             helper.Events.GameLoop.DayStarted += OnDayStarted;
             helper.Events.GameLoop.DayEnding += OnDayEnding;
             
-            Monitor.Log("HedgeHarvest Market Initialized!", LogLevel.Info);
+            Monitor.Log("StardewCapital Market Initialized!", LogLevel.Info);
         }
 
         /// <summary>
@@ -138,7 +161,7 @@ namespace StardewCapital
                 }
                 else if (Context.IsPlayerFree)
                 {
-                    Game1.activeClickableMenu = new UI.TradingMenu(_marketManager, _brokerageService, Monitor);
+                    Game1.activeClickableMenu = new UI.TradingMenu(_marketManager, _brokerageService, _scenarioManager, _impactService, Monitor);
                 }
             }
         }

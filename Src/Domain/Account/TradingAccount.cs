@@ -19,12 +19,19 @@ namespace StardewCapital.Domain.Account
         /// <summary>账户现金余额（金币）</summary>
         public decimal Cash { get; set; }
         
+        /// <summary>
+        /// 冻结保证金（限价单占用的保证金）
+        /// 当玩家下限价单时，需要预先冻结保证金，成交后转为仓位保证金，撤单后释放
+        /// </summary>
+        public decimal FrozenMargin { get; private set; }
+        
         /// <summary>所有开仓的交易仓位列表</summary>
         public List<Position> Positions { get; private set; }
 
         public TradingAccount()
         {
             Cash = 0;
+            FrozenMargin = 0;
             Positions = new List<Position>();
         }
 
@@ -93,12 +100,46 @@ namespace StardewCapital.Domain.Account
         /// 计算可用保证金（可以用来开新仓或提取的资金）
         /// </summary>
         /// <param name="currentPrices">当前市场价格字典（可为null）</param>
-        /// <returns>可用保证金 = 总资产 - 已占用保证金</returns>
+        /// <returns>可用保证金 = 总资产 - 已占用保证金 - 冻结保证金</returns>
+        /// <remarks>
+        /// WHY（为什么要扣除冻结保证金）:
+        /// 限价单虽然未成交，但已承诺在特定价格成交，必须预留保证金。
+        /// 否则玩家可能挂单后资金不足，导致成交失败。
+        /// </remarks>
         public decimal GetFreeMargin(Dictionary<string, decimal>? currentPrices = null)
         {
-            // 如果没有价格数据，近似返回现金
-            if (currentPrices == null) return Cash;
-            return GetTotalEquity(currentPrices) - GetUsedMargin(currentPrices);
+            // 如果没有价格数据，近似返回现金 - 冻结保证金
+            if (currentPrices == null) return Cash - FrozenMargin;
+            return GetTotalEquity(currentPrices) - GetUsedMargin(currentPrices) - FrozenMargin;
+        }
+
+        /// <summary>
+        /// 冻结保证金（用于限价单）
+        /// </summary>
+        /// <param name="amount">冻结金额</param>
+        /// <remarks>
+        /// WHY（为什么需要冻结机制）:
+        /// 限价单成交前，保证金处于"预留"状态，不能用于其他交易，
+        /// 但也不能立即扣除（因为订单可能不成交或被撤销）。
+        /// </remarks>
+        public void FreezeMargin(decimal amount)
+        {
+            if (amount <= 0) throw new ArgumentException("Freeze amount must be positive.");
+            if (amount > Cash - FrozenMargin)
+                throw new InvalidOperationException("Insufficient free margin to freeze.");
+            FrozenMargin += amount;
+        }
+
+        /// <summary>
+        /// 释放冻结的保证金（撤单时使用）
+        /// </summary>
+        /// <param name="amount">释放金额</param>
+        public void ReleaseMargin(decimal amount)
+        {
+            if (amount <= 0) throw new ArgumentException("Release amount must be positive.");
+            if (amount > FrozenMargin)
+                throw new InvalidOperationException("Cannot release more than frozen margin.");
+            FrozenMargin -= amount;
         }
 
         /// <summary>
@@ -106,9 +147,11 @@ namespace StardewCapital.Domain.Account
         /// </summary>
         /// <param name="cash">现金余额</param>
         /// <param name="positions">仓位列表</param>
-        public void Load(decimal cash, List<Position> positions)
+        /// <param name="frozenMargin">冻结保证金（用于限价单）</param>
+        public void Load(decimal cash, List<Position> positions, decimal frozenMargin = 0)
         {
             Cash = cash;
+            FrozenMargin = frozenMargin;
             Positions = positions ?? new List<Position>();
         }
     }

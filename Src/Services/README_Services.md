@@ -2,7 +2,7 @@
 
 ## 概述
 
-Services 模块是 HedgeHarvest 的"大脑"，负责协调各个组件、驱动市场运转、处理业务逻辑。
+Services 模块是 StardewCapital 的"大脑"，负责协调各个组件、驱动市场运转、处理业务逻辑。
 
 ## 设计理念
 
@@ -148,7 +148,7 @@ Core/Math/StatisticsUtils
    - 遍历所有游戏位置
    - 返回所有标记的箱子
 
-**存储键**：`"HedgeHarvest.Exchange"`
+**存储键**：`"StardewCapital.Exchange"`
 
 ---
 
@@ -163,7 +163,7 @@ Core/Math/StatisticsUtils
 - `SaveData()`：游戏存档时调用
 - `LoadData()`：游戏读档时调用
 
-**存档键**：`"HedgeHarvest-SaveData"`
+**存档键**：`"StardewCapital-SaveData"`
 
 ---
 

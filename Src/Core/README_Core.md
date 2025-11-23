@@ -2,7 +2,7 @@
 
 ## 概述
 
-Core 模块是 HedgeHarvest 的数学和时间引擎核心，**完全不依赖** Stardew Valley 的代码，可以独立进行单元测试。
+Core 模块是 StardewCapital 的数学和时间引擎核心，**完全不依赖** Stardew Valley 的代码，可以独立进行单元测试。
 
 ## 设计原则
 

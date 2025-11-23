@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using StardewCapital.Core.Time;
 using StardewCapital.Domain.Instruments;
 using StardewCapital.Domain.Market;
@@ -26,10 +27,19 @@ namespace StardewCapital.Services
         private readonly FundamentalEngine _fundamentalEngine;
         private readonly ConvenienceYieldService _convenienceYieldService;
         private readonly NewsGenerator _newsGenerator;
+        private readonly ImpactService _impactService;
+        private readonly ScenarioManager _scenarioManager;
         private readonly ModConfig _config;
+        private BrokerageService? _brokerageService; // ✅ 用于订单结算回调
         
         private List<IInstrument> _instruments;
         private Dictionary<string, double> _dailyTargets; // Symbol -> 目标价格
+        
+        /// <summary>
+        /// 订单簿集合（每个期货商品维护独立的订单簿）
+        /// Key = Symbol (例如 "PARSNIP-SPR-28"), Value = 该商品的订单簿实例
+        /// </summary>
+        private Dictionary<string, OrderBook> _orderBooks;
         
         /// <summary>
         /// 新闻事件完整历史列表（永久保存，供UI查看）
@@ -53,6 +63,8 @@ namespace StardewCapital.Services
             FundamentalEngine fundamentalEngine,
             ConvenienceYieldService convenienceYieldService,
             NewsGenerator newsGenerator,
+            ImpactService impactService,
+            ScenarioManager scenarioManager,
             ModConfig config)
         {
             _monitor = monitor;
@@ -61,12 +73,83 @@ namespace StardewCapital.Services
             _fundamentalEngine = fundamentalEngine;
             _convenienceYieldService = convenienceYieldService;
             _newsGenerator = newsGenerator;
+            _impactService = impactService;
+            _scenarioManager = scenarioManager;
             _config = config;
             
             _instruments = new List<IInstrument>();
             _dailyTargets = new Dictionary<string, double>();
+            _orderBooks = new Dictionary<string, OrderBook>();
             _newsHistory = new List<NewsEvent>();
             _activeNewsEffects = new List<NewsEvent>();
+        }
+
+        /// <summary>
+        /// 设置 BrokerageService 引用（用于订单结算回调）
+        /// </summary>
+        /// <param name="brokerageService">经纪服务实例</param>
+        /// <remarks>
+        /// WHY（为什么不在构造函数注入）：
+        /// MarketManager 和 BrokerageService 存在循环依赖：
+        /// - MarketManager 需要通知 BrokerageService 订单成交
+        /// - BrokerageService 需要访问 MarketManager 的订单簿
+        /// 使用 Setter 注入打破循环依赖。
+        /// </remarks>
+        public void SetBrokerageService(BrokerageService brokerageService)
+        {
+            _brokerageService = brokerageService;
+            
+            // 为所有现有订单簿订阅事件
+            foreach (var orderBook in _orderBooks.Values)
+            {
+                SubscribeToOrderBook(orderBook);
+            }
+        }
+
+        /// <summary>
+        /// 订阅订单簿的玩家成交事件
+        /// </summary>
+        private void SubscribeToOrderBook(OrderBook orderBook)
+        {
+            orderBook.OnPlayerOrderFilled += (fillInfo) =>
+            {
+                // 转发到 BrokerageService 进行资金结算
+                _brokerageService?.HandlePlayerOrderFilled(fillInfo);
+                
+                // ========== 🔥 问题1修复：记录被动成交的市场冲击 ==========
+                // 当玩家限价单（Maker）被虚拟流量吃掉时，视为真实成交量
+                // 需要计入市场冲击系统，影响后续价格
+                
+                // 获取期货合约信息
+                var instrument = _instruments.FirstOrDefault(i => i.Symbol == fillInfo.Symbol);
+                if (instrument is CommodityFutures futures)
+                {
+                    // 获取商品配置（流动性敏感度）
+                    var config = GetCommodityConfig(futures.CommodityName);
+                    if (config != null)
+                    {
+                        // ⚠️ 注意方向：
+                        // - 玩家买单被吃 → 市场有卖压 → 负冲击（压价）
+                        // - 玩家卖单被吃 → 市场有买压 → 正冲击（推价）
+                        // 因此需要**反转方向**
+                        int impactQuantity = fillInfo.IsBuy 
+                            ? -fillInfo.FillQuantity  // 买单被吃 = 市场卖出
+                            : +fillInfo.FillQuantity; // 卖单被吃 = 市场买入
+                        
+                        _impactService.RecordPlayerTrade(
+                            commodityId: futures.UnderlyingItemId,
+                            quantity: impactQuantity,
+                            liquiditySensitivity: config.LiquiditySensitivity
+                        );
+                        
+                        _monitor.Log(
+                            $"[Impact] Passive fill: {fillInfo.Symbol} {(fillInfo.IsBuy ? "BUY" : "SELL")} " +
+                            $"{fillInfo.FillQuantity} → Impact qty={impactQuantity}",
+                            LogLevel.Debug
+                        );
+                    }
+                }
+            };
         }
 
         /// <summary>
@@ -82,6 +165,20 @@ namespace StardewCapital.Services
             // 设置初始目标价（测试用，假设收盘价为40）
             _dailyTargets[parsnipFutures.Symbol] = 40.0;
             
+            // ========== Phase 10: 为每个期货创建订单簿 ==========
+            _orderBooks[parsnipFutures.Symbol] = new OrderBook(parsnipFutures.Symbol);
+            
+            // ✅ 订阅订单簿事件（用于结算回调）
+            if (_brokerageService != null)
+            {
+                SubscribeToOrderBook(_orderBooks[parsnipFutures.Symbol]);
+            }
+            
+            // 添加以下3行:
+            var scenarioType = _scenarioManager.GetCurrentScenario();
+            _orderBooks[parsnipFutures.Symbol].GenerateNPCDepth(
+                (decimal)parsnipFutures.CurrentPrice, scenarioType.ToString());
+
             _monitor.Log($"[Market] Initialized with {parsnipFutures.Symbol} @ {parsnipFutures.CurrentPrice}g", LogLevel.Info);
         }
 
@@ -93,6 +190,9 @@ namespace StardewCapital.Services
         /// </summary>
         public void OnNewDay()
         {
+            // ========== 市场剧本切换 ==========
+            _scenarioManager.OnNewDay();
+            
             // ========== 新闻系统逻辑 ==========
             
             // 1. 检测新季节 - 清空生效新闻列表
@@ -197,6 +297,14 @@ namespace StardewCapital.Services
                 _dailyTargets[instrument.Symbol] = newTarget;
                 
                 _monitor.Log($"[Market] New Day: {instrument.Symbol} Open: {instrument.CurrentPrice:F2}g, Target: {newTarget:F2}g (Fundamental: {fundamentalValue:F2}g)", LogLevel.Info);
+                
+                // ========== Phase 10: 初始化订单簿NPC深度 ==========
+                if (_orderBooks.TryGetValue(instrument.Symbol, out var orderBook))
+                {
+                    var scenarioType = _scenarioManager.GetCurrentScenario();
+                    var scenarioTypeName = scenarioType.ToString();
+                    orderBook.GenerateNPCDepth((decimal)newTarget, scenarioTypeName);
+                }
             }
         }
 
@@ -297,14 +405,46 @@ namespace StardewCapital.Services
             // 如果游戏暂停或市场关闭，停止更新
             if (_clock.IsPaused() || !_clock.IsMarketOpen()) return;
 
+            // 获取当前市场剧本参数和季节
+            var scenarioParams = _scenarioManager.GetCurrentParameters();
+            var currentSeason = GetCurrentSeason();
+
             // 更新所有产品的价格
             foreach (var instrument in _instruments)
             {
                 if (_dailyTargets.TryGetValue(instrument.Symbol, out double target))
                 {
+                    // 1. 更新日内价格（模型四：布朗桥）
                     _priceEngine.UpdatePrice(instrument, target);
+                    
+                    // 2. 叠加市场冲击（模型五）
+                    if (instrument is CommodityFutures futures)
+                    {
+                        // 获取基本面价值（用于聪明钱回归计算）
+                        double fundamentalValue = _fundamentalEngine.CalculateFundamentalValue(
+                            commodityName: futures.CommodityName,
+                            currentSeason: currentSeason,
+                            newsHistory: _activeNewsEffects
+                        );
+                        
+                        // 更新冲击值
+                        _impactService.UpdateImpact(
+                            commodityId: futures.UnderlyingItemId,
+                            currentPrice: instrument.CurrentPrice,
+                            fundamentalPrice: fundamentalValue,
+                            scenario: scenarioParams
+                        );
+                        
+                        // 叠加冲击值到最终价格 P_Final = P_Model + I(t)
+                        double impact = _impactService.GetCurrentImpact(futures.UnderlyingItemId);
+                        instrument.CurrentPrice += impact;
+                    }
                 }
             }
+            
+            // ========== Phase 10: 虚拟流量处理（订单簿碰撞检测） ==========
+            var currentScenarioType = _scenarioManager.GetCurrentScenario();
+            ProcessVirtualFlow(currentScenarioType.ToString());
         }
         
         /// <summary>
@@ -332,6 +472,121 @@ namespace StardewCapital.Services
         public List<Domain.Market.NewsEvent> GetActiveNews()
         {
             return _activeNewsEffects;
+        }
+
+        /// <summary>
+        /// 获取商品配置（用于获取流动性参数等）
+        /// </summary>
+        /// <param name="commodityName">商品名称或ItemId</param>
+        /// <returns>商品配置，如果不存在返回null</returns>
+        public CommodityConfig? GetCommodityConfig(string commodityName)
+        {
+            return _fundamentalEngine.GetCommodityConfig(commodityName);
+        }
+
+        /// <summary>
+        /// 获取指定期货的订单簿
+        /// </summary>
+        /// <param name="symbol">合约代码（例如："PARSNIP-SPR-28"）</param>
+        /// <returns>订单簿实例，如果不存在返回null</returns>
+        public OrderBook? GetOrderBook(string symbol)
+        {
+            return _orderBooks.TryGetValue(symbol, out var orderBook) ? orderBook : null;
+        }
+
+        /// <summary>
+        /// 获取所有订单簿（用于Web UI显示）
+        /// </summary>
+        /// <returns>订单簿列表</returns>
+        public List<OrderBook> GetAllOrderBooks()
+        {
+            return _orderBooks.Values.ToList();
+        }
+
+        /// <summary>
+        /// 处理虚拟流量（订单簿碰撞检测）
+        /// </summary>
+        /// <param name="scenarioType">当前市场剧本</param>
+        /// <remarks>
+        /// WHY（为什么需要虚拟流量）：
+        /// 连接宏观价格模型与微观订单簿的桥梁。模型四计算的目标价需要通过
+        /// "虚拟市价单"来推动订单簿价格移动，实现价格发现机制。
+        /// 
+        /// 碰撞机制：
+        /// 1. 虚拟流量撞击NPC订单：瞬间穿透，价格移动
+        /// 2. 虚拟流量撞击玩家挂单：消耗玩家订单，价格被"钉住"
+        /// 3. 玩家挂单被吃光：价格继续向目标移动
+        /// </remarks>
+        private void ProcessVirtualFlow(string scenarioType)
+        {
+            foreach (var instrument in _instruments)
+            {
+                if (instrument is not CommodityFutures futures) continue;
+                
+                // 获取订单簿
+                if (!_orderBooks.TryGetValue(futures.Symbol, out var orderBook))
+                    continue;
+                
+                // 1. 获取理论目标价（来自价格引擎 + 冲击层）
+                decimal targetPrice = (decimal)futures.CurrentPrice;
+                
+                // 2. 获取当前盘口中间价
+                decimal midPrice = orderBook.GetMidPrice();
+                
+                // 如果订单簿为空（无深度），先生成NPC深度
+                if (midPrice == 0)
+                {
+                    orderBook.GenerateNPCDepth(targetPrice, scenarioType);
+                    continue;
+                }
+                
+                // 3. 计算价差
+                decimal priceDiff = targetPrice - midPrice;
+                
+                // 如果价差小于阈值，无需虚拟流量（避免过度撮合）
+                if (Math.Abs(priceDiff) < 0.1m)
+                    continue;
+                
+                // 4. 计算虚拟流量数量（价差越大，流量越大）
+                bool isBuyPressure = priceDiff > 0; // 目标价 > 中间价，需要买压推高价格
+                int flowQuantity = CalculateFlowQuantity(priceDiff);
+                
+                // 5. 虚拟流量撞击订单簿
+                var (vwap, slippage) = orderBook.ExecuteMarketOrder(isBuyPressure, flowQuantity);
+                
+                // 6. 更新盘口中间价（反馈到价格引擎）
+                // 注意：这里不直接修改instrument.CurrentPrice，避免与价格引擎冲突
+                // 订单簿的价格将在下次玩家交易时体现
+                
+                // 7. 日志输出（调试用）
+                if (flowQuantity > 0 && vwap > 0)
+                {
+                    _monitor.Log(
+                        $"[OrderBook] {futures.Symbol}: VirtualFlow {(isBuyPressure ? "BUY" : "SELL")} {flowQuantity} @ VWAP={vwap:F2}g, Slippage={slippage:F2}g",
+                        LogLevel.Debug
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// 计算虚拟流量数量
+        /// </summary>
+        /// <param name="priceDiff">价格差距（目标价 - 中间价）</param>
+        /// <returns>虚拟流量数量</returns>
+        private int CalculateFlowQuantity(decimal priceDiff)
+        {
+            // 价差越大，流量越大（非线性关系）
+            decimal absDiff = Math.Abs(priceDiff);
+            
+            if (absDiff < 0.5m)
+                return 10;
+            if (absDiff < 1.0m)
+                return 25;
+            if (absDiff < 2.0m)
+                return 50;
+            
+            return 100; // 极端价差，强力流量
         }
     }
 }

@@ -104,6 +104,22 @@ namespace StardewCapital.Domain.Market
         public bool IsGreenhouseCrop { get; set; }
 
         /// <summary>
+        /// 流动性敏感度 (η - Liquidity Sensitivity)
+        /// 用途：计算玩家交易对价格的冲击 ΔI_Player = Q_trade × η
+        /// 
+        /// 含义：
+        /// - η 值小：市场深度大，玩家难以操纵价格（大宗商品）
+        /// - η 值大：市场深度浅，玩家影响力大（稀有商品）
+        /// 
+        /// 示例：
+        /// - 防风草（大宗）：η = 0.005 → 买入100个 → 价格冲击 +0.5g
+        /// - 松露（稀有）：η = 0.05 → 买入100个 → 价格冲击 +5g
+        /// 
+        /// 默认值：0.01（中等流动性）
+        /// </summary>
+        public double LiquiditySensitivity { get; set; }
+
+        /// <summary>
         /// 默认构造函数
         /// </summary>
         public CommodityConfig()
@@ -114,6 +130,7 @@ namespace StardewCapital.Domain.Market
             OffSeasonMultiplier = 1.0;
             IsGreenhouseCrop = false;
             GrowingSeason = Season.Spring;
+            LiquiditySensitivity = 0.01; // 默认中等流动性
         }
 
         /// <summary>

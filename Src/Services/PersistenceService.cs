@@ -23,7 +23,7 @@ namespace StardewCapital.Services
         private readonly BrokerageService _brokerageService;
 
         /// <summary>SMAPI存档数据的唯一键</summary>
-        private const string SAVE_KEY = "HedgeHarvest-SaveData";
+        private const string SAVE_KEY = "StardewCapital-SaveData";
 
         public PersistenceService(IModHelper helper, IMonitor monitor, BrokerageService brokerageService)
         {

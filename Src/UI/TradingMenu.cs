@@ -40,6 +40,8 @@ namespace StardewCapital.UI
         
         private readonly MarketManager _marketManager;
         private readonly BrokerageService _brokerageService;
+        private readonly ScenarioManager _scenarioManager;
+        private readonly ImpactService _impactService;
         private readonly IMonitor _monitor;
 
         private Tab _currentTab = Tab.Market;
@@ -58,12 +60,21 @@ namespace StardewCapital.UI
         /// </summary>
         /// <param name="marketManager">市场管理器（提供价格数据）</param>
         /// <param name="brokerageService">经纪服务（处理交易和账户）</param>
+        /// <param name="scenarioManager">剧本管理器（提供市场剧本信息）</param>
+        /// <param name="impactService">冲击服务（提供价格冲击信息）</param>
         /// <param name="monitor">日志监视器</param>
-        public TradingMenu(MarketManager marketManager, BrokerageService brokerageService, IMonitor monitor)
+        public TradingMenu(
+            MarketManager marketManager, 
+            BrokerageService brokerageService, 
+            ScenarioManager scenarioManager,
+            ImpactService impactService,
+            IMonitor monitor)
             : base(Game1.viewport.Width / 2 - 400, Game1.viewport.Height / 2 - 300, 800, 600, true)
         {
             _marketManager = marketManager;
             _brokerageService = brokerageService;
+            _scenarioManager = scenarioManager;
+            _impactService = impactService;
             _monitor = monitor;
 
             InitializeComponents();
@@ -90,7 +101,7 @@ namespace StardewCapital.UI
             _marketTab = new MarketTab(_monitor, x, y, width, height, _marketManager, _brokerageService);
             _accountTab = new AccountTab(_monitor, x, y, width, height, _marketManager, _brokerageService);
             _positionsTab = new PositionsTab(_monitor, x, y, width, height, _marketManager, _brokerageService);
-            _newsTab = new NewsTab(_monitor, x, y, width, height, _marketManager);
+            _newsTab = new NewsTab(_monitor, x, y, width, height, _marketManager, _scenarioManager, _impactService);
         }
 
         /// <summary>

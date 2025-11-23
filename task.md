@@ -66,31 +66,31 @@
 
 ---
 
-### **阶段 9：市场冲击与微观博弈层（P2 - 中优先级）** <!-- id: 66 -->
+### **阶段 9：市场冲击与微观博弈层（P2 - 中优先级）** ✅ **已完成** <!-- id: 66 -->
 
 #### 9.1 冲击层基础架构 <!-- id: 67 -->
-- [ ] 创建 `Domain/Market/MarketScenario.cs` - 市场剧本配置 <!-- id: 68 -->
-    - [ ] 定义剧本：死水一潭 (Dead Market) <!-- id: 69 -->
-    - [ ] 定义剧本：非理性繁荣 (Irrational Exuberance) <!-- id: 70 -->
-    - [ ] 定义剧本：恐慌踩踏 (Panic Selling) <!-- id: 71 -->
-    - [ ] 定义剧本：轧空风暴 (Short Squeeze) <!-- id: 72 -->
-- [ ] 创建 `Services/ImpactService.cs` - 市场冲击计算引擎 <!-- id: 73 -->
-    - [ ] 实现 `CalculateImpact()` - I(t+1) = I(t) + ΔI_各类参与者 <!-- id: 74 -->
-    - [ ] 实现 `CalculatePlayerImpact()` - 玩家交易冲击 (ΔI_Player) <!-- id: 75 -->
-    - [ ] 实现 `CalculateSmartMoney()` - 聪明钱回归力 (ΔI_Smart) <!-- id: 76 -->
-    - [ ] 实现 `CalculateTrendFollower()` - 技术派惯性 (ΔI_Trend) <!-- id: 77 -->
-    - [ ] 实现 `CalculateFOMO()` - 韭菜情绪放大 (ΔI_FOMO) <!-- id: 78 -->
-    - [ ] 添加冲击衰减机制（每帧 × 0.95） <!-- id: 79 -->
-- [ ] 实现剧本切换逻辑 <!-- id: 80 -->
-    - [ ] 创建 `ScenarioManager` - 每天或每几小时随机切换剧本 <!-- id: 81 -->
-    - [ ] 在新闻tab界面显示当前市场情绪 <!-- id: 82 -->
+- [x] 创建 `Domain/Market/MarketScenario.cs` - 市场剧本配置 <!-- id: 68 -->
+    - [x] 定义剧本：死水一潭 (Dead Market) <!-- id: 69 -->
+    - [x] 定义剧本：非理性繁荣 (Irrational Exuberance) <!-- id: 70 -->
+    - [x] 定义剧本：恐慌踩踏 (Panic Selling) <!-- id: 71 -->
+    - [x] 定义剧本：轧空风暴 (Short Squeeze) <!-- id: 72 -->
+- [x] 创建 `Services/ImpactService.cs` - 市场冲击计算引擎 <!-- id: 73 -->
+    - [x] 实现 `CalculateImpact()` - I(t+1) = I(t) + ΔI_各类参与者 <!-- id: 74 -->
+    - [x] 实现 `CalculatePlayerImpact()` - 玩家交易冲击 (ΔI_Player) <!-- id: 75 -->
+    - [x] 实现 `CalculateSmartMoney()` - 聪明钱回归力 (ΔI_Smart) <!-- id: 76 -->
+    - [x] 实现 `CalculateTrendFollower()` - 技术派惯性 (ΔI_Trend) <!-- id: 77 -->
+    - [x] 实现 `CalculateFOMO()` - 韭菜情绪放大 (ΔI_FOMO) <!-- id: 78 -->
+    - [x] 添加冲击衰减机制（每帧 × 0.95） <!-- id: 79 -->
+- [x] 实现剧本切换逻辑 <!-- id: 80 -->
+    - [x] 创建 `ScenarioManager` - 每天或每几小时随机切换剧本 <!-- id: 81 -->
+    - [x] 在新闻tab界面显示当前市场情绪 <!-- id: 82 -->
 
 #### 9.2 集成到价格引擎 <!-- id: 83 -->
-- [ ] 修改 `PriceEngine.UpdatePrice()` <!-- id: 84 -->
-    - [ ] 计算模型四的理性价格 P_Model <!-- id: 85 -->
-    - [ ] 叠加 ImpactService 的冲击值 I(t) <!-- id: 86 -->
-    - [ ] 输出最终价格 P_Final = P_Model + I(t) <!-- id: 87 -->
-- [ ] 在 `BrokerageService.ExecuteOrder()` 中触发冲击计算 <!-- id: 88 -->
+- [x] 修改 `PriceEngine.UpdatePrice()` <!-- id: 84 -->
+    - [x] 计算模型四的理性价格 P_Model <!-- id: 85 -->
+    - [x] 叠加 ImpactService 的冲击值 I(t) <!-- id: 86 -->
+    - [x] 输出最终价格 P_Final = P_Model + I(t) <!-- id: 87 -->
+- [x] 在 `BrokerageService.ExecuteOrder()` 中触发冲击计算 <!-- id: 88 -->
 
 ---
 

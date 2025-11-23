@@ -50,6 +50,7 @@ namespace StardewCapital.Services
             var instruments = _marketManager.GetInstruments();
             var positions = _brokerageService.Account.Positions.ToList();
 
+            // ========== 1. 处理仓位交割 ==========
             // 遍历所有持仓，查找到期合约
             foreach (var pos in positions)
             {
@@ -61,6 +62,67 @@ namespace StardewCapital.Services
                         future.DeliveryDay == currentDay)
                     {
                         ProcessPositionSettlement(pos, future);
+                    }
+                }
+            }
+
+            // ========== 2. 处理到期的限价单（问题3修复） ==========
+            ProcessExpiredOrders(currentSeason, currentDay);
+        }
+
+        /// <summary>
+        /// 处理到期合约的玩家限价单
+        /// </summary>
+        /// <param name="currentSeason">当前季节</param>
+        /// <param name="currentDay">当前日期</param>
+        /// <remarks>
+        /// WHY（为什么需要这个方法）：
+        /// 玩家可能在合约到期日前挂了限价单，但未成交。
+        /// 到期时必须强制撤单，否则订单会泄漏到下个合约周期，引发数据污染。
+        /// </remarks>
+        private void ProcessExpiredOrders(string currentSeason, int currentDay)
+        {
+            var instruments = _marketManager.GetInstruments();
+
+            foreach (var instrument in instruments)
+            {
+                if (instrument is CommodityFutures future &&
+                    future.DeliverySeason.Equals(currentSeason, StringComparison.OrdinalIgnoreCase) &&
+                    future.DeliveryDay == currentDay)
+                {
+                    var orderBook = _marketManager.GetOrderBook(future.Symbol);
+                    if (orderBook == null) continue;
+
+                    var playerOrders = orderBook.GetPlayerOrders().ToList(); // ToList 避免修改集合时的迭代器问题
+
+                    foreach (var order in playerOrders)
+                    {
+                        _monitor.Log(
+                            $"[Delivery] Cancelling expired order: {order.OrderId} " +
+                            $"({order.RemainingQuantity} @ {order.Price:F2}g)",
+                            LogLevel.Warn
+                        );
+
+                        // 强制撤单（会释放冻结的保证金）
+                        bool cancelled = _brokerageService.CancelOrder(future.Symbol, order.OrderId);
+
+                        if (cancelled)
+                        {
+                            // 发送 HUD 警告
+                            Game1.addHUDMessage(new HUDMessage(
+                                $"合约到期：限价单已撤销 ({order.RemainingQuantity} {future.Name})",
+                                3 // type=3 表示警告（黄色）
+                            ));
+                        }
+                    }
+
+                    int cancelledCount = playerOrders.Count;
+                    if (cancelledCount > 0)
+                    {
+                        _monitor.Log(
+                            $"[Delivery] Cancelled {cancelledCount} expired orders for {future.Symbol}",
+                            LogLevel.Info
+                        );
                     }
                 }
             }

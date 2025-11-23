@@ -20,7 +20,7 @@ namespace StardewCapital.Services
     public class ExchangeService
     {
         /// <summary>交易所箱子的标记键（存储在Chest.modData中）</summary>
-        public const string EXCHANGE_KEY = "HedgeHarvest.Exchange";
+        public const string EXCHANGE_KEY = "StardewCapital.Exchange";
 
         /// <summary>
         /// 判断箱子是否为交易所箱子
