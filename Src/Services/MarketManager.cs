@@ -174,10 +174,17 @@ namespace StardewCapital.Services
                 SubscribeToOrderBook(_orderBooks[parsnipFutures.Symbol]);
             }
             
-            // 添加以下3行:
+            // 添加以下行：获取商品配置和生成订单簿深度
             var scenarioType = _scenarioManager.GetCurrentScenario();
-            _orderBooks[parsnipFutures.Symbol].GenerateNPCDepth(
-                (decimal)parsnipFutures.CurrentPrice, scenarioType.ToString());
+            var parsnipConfig = GetCommodityConfig(parsnipFutures.CommodityName);
+            if (parsnipConfig != null)
+            {
+                _orderBooks[parsnipFutures.Symbol].GenerateNPCDepth(
+                    (decimal)parsnipFutures.CurrentPrice, 
+                    scenarioType.ToString(),
+                    parsnipConfig.LiquiditySensitivity
+                );
+            }
 
             _monitor.Log($"[Market] Initialized with {parsnipFutures.Symbol} @ {parsnipFutures.CurrentPrice}g", LogLevel.Info);
         }
@@ -303,7 +310,20 @@ namespace StardewCapital.Services
                 {
                     var scenarioType = _scenarioManager.GetCurrentScenario();
                     var scenarioTypeName = scenarioType.ToString();
-                    orderBook.GenerateNPCDepth((decimal)newTarget, scenarioTypeName);
+                    
+                    // 获取商品配置（流动性参数）
+                    if (instrument is CommodityFutures futuresInst)
+                    {
+                        var config = GetCommodityConfig(futuresInst.CommodityName);
+                        if (config != null)
+                        {
+                            orderBook.GenerateNPCDepth(
+                                (decimal)newTarget, 
+                                scenarioTypeName,
+                                config.LiquiditySensitivity
+                            );
+                        }
+                    }
                 }
             }
         }
@@ -536,7 +556,11 @@ namespace StardewCapital.Services
                 // 如果订单簿为空（无深度），先生成NPC深度
                 if (midPrice == 0)
                 {
-                    orderBook.GenerateNPCDepth(targetPrice, scenarioType);
+                    var config = GetCommodityConfig(futures.CommodityName);
+                    if (config != null)
+                    {
+                        orderBook.GenerateNPCDepth(targetPrice, scenarioType, config.LiquiditySensitivity);
+                    }
                     continue;
                 }
                 

@@ -257,14 +257,20 @@ namespace StardewCapital.Domain.Market
         }
 
         /// <summary>
-        /// 生成NPC虚拟深度
+        /// 生成NPC虚拟深度（基于流动性系数）
         /// </summary>
-        /// <param name="midPrice">盘口中间价</param>
+        /// <param name="midPrice">盘口中间价（公式计算的上帝价格）</param>
         /// <param name="scenarioType">市场剧本类型</param>
+        /// <param name="liquiditySensitivity">流动性敏感度 λ（来自 CommodityConfig.LiquiditySensitivity）</param>
         /// <remarks>
         /// WHY（为什么需要虚拟深度）：
         /// 真实市场有做市商提供流动性，我们用NPC虚拟订单模拟这一机制。
         /// 不同剧本下，NPC深度分布不同，影响玩家的交易体验。
+        /// 
+        /// WHY（为什么订单密度要与流动性系数一致）：
+        /// Impact公式：ΔI = λ × Q（买入Q个商品，价格上涨 λQ）
+        /// 订单簿滑点：如果1g价格区间内有N个订单，买入N个价格上涨1g
+        /// 一致性要求：N ≈ 1/λ（流动性越差，λ越大，订单越稀疏）
         /// 
         /// 剧本特征：
         /// - DeadMarket（死水一潭）：买卖盘密集且对称，价格难以波动
@@ -272,7 +278,7 @@ namespace StardewCapital.Domain.Market
         /// - PanicSelling（恐慌踩踏）：卖盘密集，买盘稀疏，价格易跌
         /// - ShortSqueeze（轧空风暴）：买盘极度密集，卖盘几乎消失
         /// </remarks>
-        public void GenerateNPCDepth(decimal midPrice, string scenarioType)
+        public void GenerateNPCDepth(decimal midPrice, string scenarioType, double liquiditySensitivity)
         {
             // 清除现有NPC订单（保留玩家订单）
             ClearNPCOrders();
@@ -280,11 +286,21 @@ namespace StardewCapital.Domain.Market
             // 生成5档深度
             for (int level = 1; level <= 5; level++)
             {
-                decimal bidPrice = midPrice * (1 - level * 0.01m);
-                decimal askPrice = midPrice * (1 + level * 0.01m);
+                decimal bidPrice = midPrice * (1 - level * 0.01m);  // -1%, -2%, -3%, -4%, -5%
+                decimal askPrice = midPrice * (1 + level * 0.01m);  // +1%, +2%, +3%, +4%, +5%
 
-                int bidQty = GetNPCQuantity(scenarioType, isBuy: true, level);
-                int askQty = GetNPCQuantity(scenarioType, isBuy: false, level);
+                // 🔥 核心：根据流动性系数计算订单数量
+                // 价格间隔 = midPrice × 1% (例如 100g × 0.01 = 1g)
+                decimal priceGap = midPrice * 0.01m;
+                
+                // 单位价格区间内应放置的订单数量 = priceGap / λ
+                // 例如：λ = 0.5（流动性差），1g区间内放 2 个订单
+                //      λ = 0.01（流动性好），1g区间内放 100 个订单
+                int baseQty = Math.Max(1, (int)((double)priceGap / liquiditySensitivity));
+
+                // 应用剧本调整（微调买卖盘分布）
+                int bidQty = ApplyScenarioMultiplier(baseQty, scenarioType, isBuy: true, level);
+                int askQty = ApplyScenarioMultiplier(baseQty, scenarioType, isBuy: false, level);
 
                 if (bidQty > 0)
                     Bids.Add(new LimitOrder(Symbol, true, bidPrice, bidQty, isPlayerOrder: false));
@@ -296,25 +312,30 @@ namespace StardewCapital.Domain.Market
         }
 
         /// <summary>
-        /// 根据剧本类型计算NPC订单数量
+        /// 应用剧本乘数（微调深度分布）
         /// </summary>
+        /// <param name="baseQty">基础订单数量（由流动性系数计算）</param>
         /// <param name="scenarioType">剧本类型</param>
         /// <param name="isBuy">买卖方向</param>
         /// <param name="level">档位（1-5，1为最优价）</param>
-        /// <returns>订单数量</returns>
-        private int GetNPCQuantity(string scenarioType, bool isBuy, int level)
+        /// <returns>调整后的订单数量</returns>
+        private int ApplyScenarioMultiplier(int baseQty, string scenarioType, bool isBuy, int level)
         {
-            // 基础数量随档位递减
-            int baseQty = 100 - (level - 1) * 15;
+            // 基础衰减（档位越远，数量越少）
+            // Level 1: 100%, Level 2: 85%, Level 3: 70%, Level 4: 55%, Level 5: 40%
+            double decayFactor = 1.0 - (level - 1) * 0.15;
 
-            return scenarioType switch
+            // 剧本乘数（调整买卖盘比例）
+            double multiplier = scenarioType switch
             {
-                "DeadMarket" => baseQty, // 死水一潭：买卖对称
-                "IrrationalExuberance" => isBuy ? baseQty * 2 : baseQty / 3, // 非理性繁荣：买盘密集
-                "PanicSelling" => isBuy ? baseQty / 3 : baseQty * 2, // 恐慌踩踏：卖盘密集
-                "ShortSqueeze" => isBuy ? baseQty * 3 : baseQty / 5, // 轧空风暴：买盘极密集
-                _ => baseQty
+                "DeadMarket" => 1.0,  // 死水一潭：买卖对称
+                "IrrationalExuberance" => isBuy ? 2.0 : 0.5,  // 非理性繁荣：买盘密集，卖盘稀疏
+                "PanicSelling" => isBuy ? 0.5 : 2.0,  // 恐慌踩踏：卖盘密集，买盘稀疏
+                "ShortSqueeze" => isBuy ? 3.0 : 0.2,  // 轧空风暴：买盘极密集，卖盘几乎消失
+                _ => 1.0
             };
+
+            return Math.Max(1, (int)(baseQty * multiplier * decayFactor));
         }
 
         /// <summary>
@@ -370,5 +391,54 @@ namespace StardewCapital.Domain.Market
             playerOrders.AddRange(Asks.Where(o => o.IsPlayerOrder));
             return playerOrders;
         }
+
+        /// <summary>
+        /// 计算价格区间内的订单总量（用于虚拟流量反推）
+        /// </summary>
+        /// <param name="fromPrice">起始价格</param>
+        /// <param name="toPrice">目标价格</param>
+        /// <param name="side">订单方向（Ask=卖盘，Bid=买盘）</param>
+        /// <returns>区间内的订单总量</returns>
+        /// <remarks>
+        /// WHY（为什么需要这个方法）：
+        /// 实现"价格位移 → 成交量反推"机制。
+        /// 当公式计算出目标价时，需要知道从当前价到目标价需要吃掉多少订单。
+        /// 
+        /// 例如：
+        /// - 当前盘口中间价 100g，目标价 105g（需要买压推高）
+        /// - 扫描卖盘 [100, 105] 区间，发现有 50 个订单
+        /// - 生成 50 个虚拟买单，正好推到 105g
+        /// </remarks>
+        public int CalculateVolumeInRange(decimal fromPrice, decimal toPrice, OrderSide side)
+        {
+            var targetQueue = side == OrderSide.Ask ? Asks : Bids;
+            
+            int totalVolume = 0;
+            foreach (var order in targetQueue)
+            {
+                // 检查订单是否在区间内
+                bool inRange = side == OrderSide.Ask
+                    ? (order.Price >= fromPrice && order.Price <= toPrice)
+                    : (order.Price >= toPrice && order.Price <= fromPrice);
+                
+                if (inRange)
+                {
+                    totalVolume += order.RemainingQuantity;
+                }
+            }
+            
+            return totalVolume;
+        }
+    }
+
+    /// <summary>
+    /// 订单方向枚举（用于 CalculateVolumeInRange）
+    /// </summary>
+    public enum OrderSide
+    {
+        /// <summary>买盘（Bids）</summary>
+        Bid,
+        /// <summary>卖盘（Asks）</summary>
+        Ask
     }
 }
