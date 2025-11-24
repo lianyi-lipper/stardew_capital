@@ -40,6 +40,12 @@ namespace StardewCapital.Domain.Instruments
         /// - Backwardation (贴水): F_t < S_t，便利收益高于持有成本
         /// </remarks>
         public double FuturesPrice { get; set; }
+
+        /// <summary>
+        /// 开盘价（当日开盘时的价格）
+        /// 用于计算涨跌额和涨跌幅，在每日 OnNewDay 时记录
+        /// </summary>
+        public double OpenPrice { get; set; }
         
         /// <summary>保证金比例（默认0.1，即10%保证金）</summary>
         public double MarginRatio { get; private set; }
@@ -67,6 +73,7 @@ namespace StardewCapital.Domain.Instruments
             DeliveryDay = deliveryDay;
             CurrentPrice = initialPrice;
             FuturesPrice = initialPrice; // 初始值与现货价格相同，后续由PriceEngine计算
+            OpenPrice = initialPrice;    // 初始开盘价
             
             // 生成合约代码：商品名-季节(前3字母)-交割日
             // 例：PARSNIP-SPR-28 代表 防风草-春季-28号交割

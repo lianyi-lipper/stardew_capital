@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.Market
 {
     /// <summary>
     /// 市场冲击计算服务
@@ -303,6 +303,18 @@ namespace StardewCapital.Services
                 _impactHistory[commodityId] = new Queue<double>();
                 _priceHistory[commodityId] = new Queue<double>();
             }
+        }
+
+        /// <summary>
+        /// 获取历史冲击值列表（只读副本）
+        /// </summary>
+        public List<double> GetImpactHistory(string commodityId)
+        {
+            if (_impactHistory.TryGetValue(commodityId, out var queue))
+            {
+                return queue.ToList();
+            }
+            return new List<double>();
         }
 
         /// <summary>

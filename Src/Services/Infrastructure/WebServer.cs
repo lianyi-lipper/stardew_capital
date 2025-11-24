@@ -6,9 +6,12 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using StardewCapital.Domain.Instruments;
+using StardewCapital.Services.Market;
+using StardewCapital.Services.Trading;
 using StardewModdingAPI;
+using StardewValley;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.Infrastructure
 {
     /// <summary>
     /// Web服务器（可选功能）
@@ -164,11 +167,77 @@ namespace StardewCapital.Services
                 for (int i = 0; i < instruments.Count; i++)
                 {
                     var inst = instruments[i];
-                    sb.Append($"{{\"symbol\":\"{inst.Symbol}\",\"price\":{inst.CurrentPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)},\"name\":\"{inst.Name}\"}}");
+                    var futures = inst as CommodityFutures;
+                    
+                    double price = futures != null ? futures.FuturesPrice : inst.CurrentPrice;
+                    double spotPrice = inst.CurrentPrice;
+                    double basis = price - spotPrice;
+                    double openPrice = futures != null ? futures.OpenPrice : inst.CurrentPrice;
+                    double change = price - openPrice;
+                    double changePercent = openPrice > 0 ? (change / openPrice) * 100 : 0;
+                    
+                    sb.Append("{");
+                    sb.Append($"\"symbol\":\"{inst.Symbol}\",");
+                    sb.Append($"\"price\":{price.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                    sb.Append($"\"spotPrice\":{spotPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                    sb.Append($"\"basis\":{basis.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                    sb.Append($"\"openPrice\":{openPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                    sb.Append($"\"change\":{change.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                    sb.Append($"\"changePercent\":{changePercent.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                    sb.Append($"\"name\":\"{inst.Name}\"");
+                    
+                    if (futures != null)
+                    {
+                        // 简单计算到期天数（仅限同季节，跨季节需完善）
+                        int daysToMaturity = futures.DeliveryDay - Game1.dayOfMonth;
+                        sb.Append($",\"daysToMaturity\":{daysToMaturity}");
+                        sb.Append($",\"deliveryDate\":\"{futures.DeliverySeason} {futures.DeliveryDay}\"");
+                    }
+                    
+                    sb.Append("}");
                     if (i < instruments.Count - 1) sb.Append(",");
                 }
                 
                 sb.Append("]");
+                jsonResponse = sb.ToString();
+            }
+            // GET /api/news - 获取今日新闻
+            else if (path == "/api/news")
+            {
+                var newsList = _marketManager.GetActiveNews();
+                var sb = new StringBuilder();
+                sb.Append("[");
+                
+                for (int i = 0; i < newsList.Count; i++)
+                {
+                    var news = newsList[i];
+                    sb.Append("{");
+                    sb.Append($"\"headline\":\"{news.Title}\",");
+                    sb.Append($"\"description\":\"{news.Description}\",");
+                    sb.Append($"\"impactType\":\"{news.Type}\"");
+                    sb.Append("}");
+                    if (i < newsList.Count - 1) sb.Append(",");
+                }
+                
+                sb.Append("]");
+                jsonResponse = sb.ToString();
+            }
+            // GET /api/account - 获取账户信息
+            else if (path == "/api/account")
+            {
+                var account = _brokerageService.Account;
+                var prices = GetCurrentPrices();
+                decimal equity = _brokerageService.GetEquity(prices);
+                decimal usedMargin = account.UsedMargin;
+                decimal marginLevel = usedMargin > 0 ? equity / usedMargin : 999m; // 999 = 无限/安全
+                
+                var sb = new StringBuilder();
+                sb.Append("{");
+                sb.Append($"\"cash\":{account.Cash.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                sb.Append($"\"equity\":{equity.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                sb.Append($"\"usedMargin\":{usedMargin.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                sb.Append($"\"marginLevel\":{marginLevel.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+                sb.Append("}");
                 jsonResponse = sb.ToString();
             }
             // GET /api/orderbook?symbol=XXX - 获取订单簿
@@ -253,6 +322,68 @@ namespace StardewCapital.Services
                     sb.Append($"\"unrealizedPnL\":{unrealizedPnL.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
                     sb.Append("}");
                     if (i < positions.Count - 1) sb.Append(",");
+                }
+                
+                sb.Append("]");
+                jsonResponse = sb.ToString();
+            }
+            // GET /api/impact/history?symbol=XXX - 获取冲击值历史
+            else if (path.StartsWith("/api/impact/history"))
+            {
+                var query = context.Request.Url?.Query;
+                string symbol = "PARSNIP-SPR-28"; // 默认值
+                
+                if (!string.IsNullOrEmpty(query))
+                {
+                    var parts = query.TrimStart('?').Split('&');
+                    foreach (var part in parts)
+                    {
+                        var kv = part.Split('=');
+                        if (kv.Length == 2 && kv[0] == "symbol")
+                            symbol = Uri.UnescapeDataString(kv[1]);
+                    }
+                }
+
+                // 需要先找到对应的 commodityId (UnderlyingItemId)
+                // 简单起见，假设 symbol 包含 commodityName，或者先获取 instrument
+                var instruments = _marketManager.GetInstruments();
+                var inst = instruments.FirstOrDefault(i => i.Symbol == symbol);
+                
+                if (inst is CommodityFutures futures)
+                {
+                    var history = _marketManager.GetImpactHistory(futures.UnderlyingItemId);
+                    var sb = new StringBuilder();
+                    sb.Append("[");
+                    for (int i = 0; i < history.Count; i++)
+                    {
+                        sb.Append(history[i].ToString(System.Globalization.CultureInfo.InvariantCulture));
+                        if (i < history.Count - 1) sb.Append(",");
+                    }
+                    sb.Append("]");
+                    jsonResponse = sb.ToString();
+                }
+                else
+                {
+                    jsonResponse = "[]";
+                }
+            }
+            // GET /api/news/history - 获取新闻历史
+            else if (path == "/api/news/history")
+            {
+                var newsList = _marketManager.GetNewsHistory();
+                var sb = new StringBuilder();
+                sb.Append("[");
+                
+                for (int i = 0; i < newsList.Count; i++)
+                {
+                    var news = newsList[i];
+                    sb.Append("{");
+                    sb.Append($"\"headline\":\"{news.Title}\",");
+                    sb.Append($"\"description\":\"{news.Description}\",");
+                    sb.Append($"\"impactType\":\"{news.Type}\",");
+                    sb.Append($"\"day\":{news.Day}"); // 假设 NewsEvent 有 Day 属性，如果没有需检查
+                    sb.Append("}");
+                    if (i < newsList.Count - 1) sb.Append(",");
                 }
                 
                 sb.Append("]");

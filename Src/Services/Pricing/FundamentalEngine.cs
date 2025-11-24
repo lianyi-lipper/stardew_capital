@@ -7,11 +7,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using StardewCapital.Domain.Market;
+using StardewCapital.Services.Config;
 using StardewModdingAPI;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.Pricing
 {
     /// <summary>
     /// 基本面价值计算引擎（模型一）
@@ -29,6 +31,7 @@ namespace StardewCapital.Services
     public class FundamentalEngine
     {
         private readonly IMonitor _monitor;
+        private readonly IModHelper _helper;
         
         /// <summary>
         /// 商品配置字典（商品名 -> 配置）
@@ -39,29 +42,50 @@ namespace StardewCapital.Services
         /// 构造函数
         /// </summary>
         /// <param name="monitor">SMAPI 日志监视器</param>
-        public FundamentalEngine(IMonitor monitor)
+        /// <param name="helper">SMAPI Mod 辅助工具（用于文件路径解析）</param>
+        public FundamentalEngine(IMonitor monitor, IModHelper helper)
         {
             _monitor = monitor;
+            _helper = helper;
             _commodityConfigs = new Dictionary<string, CommodityConfig>();
             
-            // 初始化预设商品配置
+            // 初始化商品配置（从 JSON 加载或使用默认值）
             InitializeDefaultCommodities();
         }
 
         /// <summary>
         /// 初始化默认商品配置
+        /// 优先从 JSON 文件加载，如果失败则使用硬编码配置
         /// </summary>
         /// <remarks>
-        /// 加载常见农作物的基础经济参数
-        /// 后续可以从配置文件中加载
+        /// 加载顺序：
+        /// 1. 尝试从 Assets/commodities.json 加载
+        /// 2. 如果失败，回退到硬编码的默认配置
         /// </remarks>
         private void InitializeDefaultCommodities()
         {
-            AddCommodity(CommodityConfig.CreateParsnipConfig());
-            AddCommodity(CommodityConfig.CreateStrawberryConfig());
-            AddCommodity(CommodityConfig.CreateBlueberryConfig());
-            
-            _monitor.Log($"[FundamentalEngine] 已加载 {_commodityConfigs.Count} 种商品配置", LogLevel.Info);
+            // 尝试从 JSON 文件加载（使用相对路径）
+            var loader = new CommodityConfigLoader(_monitor, _helper);
+            var configs = loader.LoadFromJson("Assets/commodities.json");
+
+            if (configs.Count > 0)
+            {
+                // 成功加载 JSON 配置
+                foreach (var config in configs)
+                {
+                    AddCommodity(config);
+                }
+                _monitor.Log($"[FundamentalEngine] 从 JSON 加载了 {_commodityConfigs.Count} 种商品配置", LogLevel.Info);
+            }
+            else
+            {
+                // 回退到硬编码配置
+                _monitor.Log("[FundamentalEngine] JSON 加载失败，使用硬编码配置", LogLevel.Warn);
+                AddCommodity(CommodityConfig.CreateParsnipConfig());
+                AddCommodity(CommodityConfig.CreateStrawberryConfig());
+                AddCommodity(CommodityConfig.CreateBlueberryConfig());
+                _monitor.Log($"[FundamentalEngine] 已加载 {_commodityConfigs.Count} 种硬编码商品配置", LogLevel.Info);
+            }
         }
 
         /// <summary>
@@ -81,6 +105,15 @@ namespace StardewCapital.Services
         public CommodityConfig? GetCommodityConfig(string commodityName)
         {
             return _commodityConfigs.TryGetValue(commodityName, out var config) ? config : null;
+        }
+
+        /// <summary>
+        /// 获取所有商品配置列表
+        /// </summary>
+        /// <returns>所有已加载的商品配置</returns>
+        public List<CommodityConfig> GetAllCommodityConfigs()
+        {
+            return _commodityConfigs.Values.ToList();
         }
 
         /// <summary>

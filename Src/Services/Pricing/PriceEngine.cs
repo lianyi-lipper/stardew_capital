@@ -4,7 +4,7 @@ using StardewCapital.Core.Math;
 using StardewCapital.Core.Time;
 using StardewCapital.Domain.Instruments;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.Pricing
 {
     /// <summary>
     /// 价格引擎

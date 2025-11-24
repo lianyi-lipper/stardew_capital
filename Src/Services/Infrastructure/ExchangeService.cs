@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Objects;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.Infrastructure
 {
     /// <summary>
     /// 交易所服务

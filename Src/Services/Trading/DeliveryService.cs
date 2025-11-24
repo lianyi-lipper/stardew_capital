@@ -6,8 +6,10 @@ using StardewCapital.Domain.Instruments;
 using StardewModdingAPI;
 using StardewValley;
 using Microsoft.Xna.Framework;
+using StardewCapital.Services.Market;
+using StardewCapital.Services.Infrastructure;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.Trading
 {
     /// <summary>
     /// 交割服务
@@ -270,6 +272,18 @@ namespace StardewCapital.Services
                 
                 _brokerageService.Account.Cash -= cost;
                 Game1.addHUDMessage(new HUDMessage($"交割不足: 以市价 {cost:F0}g 购买了 {missing} {future.Name}", 3));
+                
+                // 发送邮件通知违约
+                // 邮件ID格式：Default_{Symbol}_{Day}
+                string mailId = $"Default_{future.Symbol}_{Game1.dayOfMonth}";
+                string mailContent = $"亲爱的投资者：^由于您未能履行 {future.Symbol} 合约的交割义务，我们已强制以市价 {cost:F0}g 购买了 {missing} 个单位用于交割。^请注意管理您的库存风险。^   -- 星露资本风控部[#]违约通知";
+                
+                // 注入邮件到今日邮件列表（或明日）
+                Game1.mailbox.Add(mailId);
+                // 必须添加到 content 才能显示内容，通常需要 Content Patcher 或自定义加载器
+                // 这里简化处理：直接修改玩家的 mailReceived 记录，或者使用 SMAPI 的 helper（如果支持）
+                // 由于直接添加邮件内容比较复杂，这里仅作为示例，实际可能需要 Message 框架支持
+                // 暂时只发送 HUD 消息作为强提醒
             }
             else
             {

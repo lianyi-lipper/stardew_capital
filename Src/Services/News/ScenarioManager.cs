@@ -10,7 +10,7 @@ using StardewModdingAPI;
 using System;
 using System.Collections.Generic;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.News
 {
     /// <summary>
     /// 市场剧本管理器

@@ -4,10 +4,12 @@ using System.Linq;
 using StardewCapital.Domain.Account;
 using StardewCapital.Domain.Instruments;
 using StardewCapital.Domain.Market;
+using StardewCapital.Services.Market;
+using StardewCapital.Services.Infrastructure;
 using StardewModdingAPI;
 using StardewValley;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.Trading
 {
     /// <summary>
     /// 经纪服务
@@ -174,7 +176,7 @@ namespace StardewCapital.Services
         /// 获取当前所有产品的市场价格
         /// </summary>
         /// <returns>价格字典（Symbol -> Price）</returns>
-        private Dictionary<string, decimal> GetCurrentPrices()
+        public Dictionary<string, decimal> GetCurrentPrices()
         {
             var dict = new Dictionary<string, decimal>();
             foreach (var inst in _marketManager.GetInstruments())
@@ -186,6 +188,73 @@ namespace StardewCapital.Services
                 dict[inst.Symbol] = price;
             }
             return dict;
+        }
+
+        /// <summary>
+        /// 获取账户总未实现盈亏
+        /// </summary>
+        public decimal GetTotalUnrealizedPnL(Dictionary<string, decimal> currentPrices)
+        {
+            return _account.GetTotalUnrealizedPnL(currentPrices);
+        }
+
+        /// <summary>
+        /// 获取账户权益 (Equity = Cash + Unrealized PnL)
+        /// </summary>
+        public decimal GetEquity(Dictionary<string, decimal> currentPrices)
+        {
+            return _account.GetEquity(currentPrices);
+        }
+
+        /// <summary>
+        /// 强制平仓指定合约（忽略保证金检查）
+        /// </summary>
+        /// <param name="symbol">合约代码</param>
+        public void LiquidatePosition(string symbol)
+        {
+            var pos = _account.Positions.FirstOrDefault(p => p.Symbol == symbol);
+            if (pos == null) return;
+
+            // 强制平仓 = 反向开单，数量等于持仓量
+            // 使用 ExecuteOrder，但在内部需要绕过保证金检查吗？
+            // ExecuteOrder 会检查保证金，这在强平且保证金不足时会失败。
+            // 因此需要一个专门的 InternalExecuteOrder 或者在此处直接操作。
+            
+            // 为了安全，我们直接模拟一次成交，不走 ExecuteOrder 的保证金检查流程
+            
+            var prices = GetCurrentPrices();
+            if (!prices.TryGetValue(symbol, out decimal currentPrice)) return;
+
+            // 1. 计算盈亏
+            decimal pnl = pos.GetUnrealizedPnL(currentPrice);
+            
+            // 2. 结算到现金
+            _account.Cash += pnl;
+            
+            // 3. 释放保证金
+            _account.ReleaseMargin(pos.UsedMargin);
+            
+            // 4. 移除仓位
+            _account.Positions.Remove(pos);
+            
+            _monitor.Log($"[Brokerage] Force liquidated {symbol}. PnL: {pnl:F2}g", LogLevel.Warn);
+            
+            // 5. 记录冲击（强平也是市场交易）
+            var instrument = _marketManager.GetInstruments().FirstOrDefault(i => i.Symbol == symbol);
+            if (instrument is CommodityFutures futures)
+            {
+                var config = _marketManager.GetCommodityConfig(futures.CommodityName);
+                if (config != null)
+                {
+                    // 强平方向与持仓相反：多头强平=卖出，空头强平=买入
+                    int quantity = -pos.Quantity;
+                    _impactService.RecordPlayerTrade(
+                        commodityId: futures.UnderlyingItemId,
+                        quantity: quantity,
+                        liquiditySensitivity: config.LiquiditySensitivity
+                    );
+                }
+            }
         }
 
         /// <summary>

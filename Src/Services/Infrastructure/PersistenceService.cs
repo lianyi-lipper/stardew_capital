@@ -1,8 +1,8 @@
 using StardewCapital.Data;
-using StardewCapital.Services;
+using StardewCapital.Services.Trading;
 using StardewModdingAPI;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.Infrastructure
 {
     /// <summary>
     /// 持久化服务

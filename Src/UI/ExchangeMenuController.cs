@@ -1,4 +1,4 @@
-using StardewCapital.Services;
+using StardewCapital.Services.Infrastructure;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;

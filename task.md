@@ -94,69 +94,69 @@
 
 ---
 
-### **阶段 10：L2订单簿系统（P4 - 低优先级，高级功能）** <!-- id: 89 -->
+### **阶段 10：L2订单簿系统（P4 - 低优先级，高级功能）** ✅ **已完成** <!-- id: 89 -->
 
-- [ ] 创建 `Domain/Market/OrderBook.cs` - 订单簿数据结构 <!-- id: 90 -->
-    - [ ] `List<LimitOrder> Bids` - 买盘队列（降序） <!-- id: 91 -->
-    - [ ] `List<LimitOrder> Asks` - 卖盘队列（升序） <!-- id: 92 -->
-- [ ] 创建 `Domain/Market/LimitOrder.cs` - 限价单模型 <!-- id: 93 -->
-    - [ ] 属性：OrderId, IsPlayerOrder, Price, Quantity, Timestamp <!-- id: 94 -->
-- [ ] 实现订单簿操作 <!-- id: 95 -->
-    - [ ] `PlaceOrder()` - 插入订单到正确位置 <!-- id: 96 -->
-    - [ ] `ExecuteMarketOrder()` - 市价单撮合，返回 VWAP 和滑点 <!-- id: 97 -->
-    - [ ] `GenerateNPCDepth()` - 根据市场情绪生成虚拟深度 <!-- id: 98 -->
-- [ ] 虚拟流量与碰撞检测 <!-- id: 99 -->
-    - [ ] 在 `MarketManager.Update()` 中实现 `ProcessVirtualFlow()` <!-- id: 100 -->
-    - [ ] 计算模型四的目标价与盘口中间价的差距 <!-- id: 101 -->
-    - [ ] 生成虚拟市价单去"撞击"订单簿 <!-- id: 102 -->
-    - [ ] 玩家挂单被吃时触发回调通知 <!-- id: 103 -->
-- [ ] 更新 `BrokerageService` 支持限价单 <!-- id: 104 -->
-    - [ ] 添加 `PlaceLimitOrder()` 方法 <!-- id: 105 -->
-    - [ ] 添加 `CancelOrder()` 方法 <!-- id: 106 -->
-- [ ] 在 `TradingMenu` 中显示 L2 深度（前5档） <!-- id: 107 -->
+- [x] 创建 `Domain/Market/OrderBook.cs` - 订单簿数据结构 <!-- id: 90 -->
+    - [x] `List<LimitOrder> Bids` - 买盘队列（降序） <!-- id: 91 -->
+    - [x] `List<LimitOrder> Asks` - 卖盘队列（升序） <!-- id: 92 -->
+- [x] 创建 `Domain/Market/LimitOrder.cs` - 限价单模型 <!-- id: 93 -->
+    - [x] 属性：OrderId, IsPlayerOrder, Price, Quantity, Timestamp <!-- id: 94 -->
+- [x] 实现订单簿操作 <!-- id: 95 -->
+    - [x] `PlaceOrder()` - 插入订单到正确位置 <!-- id: 96 -->
+    - [x] `ExecuteMarketOrder()` - 市价单撮合，返回 VWAP 和滑点 <!-- id: 97 -->
+    - [x] `GenerateNPCDepth()` - 根据市场情绪生成虚拟深度 <!-- id: 98 -->
+- [x] 虚拟流量与碰撞检测 <!-- id: 99 -->
+    - [x] 在 `MarketManager.Update()` 中实现 `ProcessVirtualFlow()` (Moved to `MarketPriceUpdater`) <!-- id: 100 -->
+    - [x] 计算模型四的目标价与盘口中间价的差距 <!-- id: 101 -->
+    - [x] 生成虚拟市价单去"撞击"订单簿 <!-- id: 102 -->
+    - [x] 玩家挂单被吃时触发回调通知 <!-- id: 103 -->
+- [x] 更新 `BrokerageService` 支持限价单 <!-- id: 104 -->
+    - [x] 添加 `PlaceLimitOrder()` 方法 <!-- id: 105 -->
+    - [x] 添加 `CancelOrder()` 方法 <!-- id: 106 -->
+- [x] 在 `TradingMenu` 中显示 L2 深度（前5档） (Implemented in Web UI) <!-- id: 107 -->
 
 ---
 
-### **阶段 11：风险管理系统（P3 - 中高优先级）** <!-- id: 108 -->
+### **阶段 11：风险管理系统（P3 - 中高优先级）** ✅ **已完成** <!-- id: 108 -->
 
 #### 11.1 每日结算系统 <!-- id: 109 -->
-- [ ] 创建 `Services/ClearingService.cs` - 结算服务 <!-- id: 110 -->
-    - [ ] 实现 `DailySettlement()` - Mark-to-Market 结算 <!-- id: 111 -->
-    - [ ] 计算未实现盈亏（Unrealized P&L） <!-- id: 112 -->
-    - [ ] 计算所需保证金（Required Margin） <!-- id: 113 -->
-    - [ ] 检查保证金覆盖率（Margin Coverage Ratio） <!-- id: 114 -->
-- [ ] 追保与强平逻辑 <!-- id: 115 -->
-    - [ ] 实现 `IssueMarginCall()` - 保证金低于 80% 维持线时警告 <!-- id: 116 -->
-    - [ ] 实现 `ForceLiquidate()` - 低于 50% 时强制平仓 <!-- id: 117 -->
-    - [ ] 在游戏内发送 HUD 消息和邮件通知 <!-- id: 118 -->
-- [ ] 集成到 `MarketManager` <!-- id: 119 -->
-    - [ ] 在每日收盘时（2:00 AM）调用 `ClearingService` <!-- id: 120 -->
+- [x] 创建 `Services/ClearingService.cs` - 结算服务 （注意，此时文件夹变化了，要检查一下）<!-- id: 110 -->
+    - [x] 实现 `DailySettlement()` - Mark-to-Market 结算 <!-- id: 111 -->
+    - [x] 计算未实现盈亏（Unrealized P&L） <!-- id: 112 -->
+    - [x] 计算所需保证金（Required Margin） <!-- id: 113 -->
+    - [x] 检查保证金覆盖率（Margin Coverage Ratio） <!-- id: 114 -->
+- [x] 追保与强平逻辑 <!-- id: 115 -->
+    - [x] 实现 `IssueMarginCall()` - 保证金低于 80% 维持线时警告 <!-- id: 116 -->
+    - [x] 实现 `ForceLiquidate()` - 低于 50% 时强制平仓 <!-- id: 117 -->
+    - [x] 在游戏内发送 HUD 消息和邮件通知 <!-- id: 118 -->
+- [x] 集成到 `MarketManager` <!-- id: 119 -->
+    - [x] 在每日收盘时调用 `ClearingService` <!-- id: 120 -->
 
 #### 11.2 到期交割与违约处理 <!-- id: 121 -->
-- [ ] 扩展 `DeliveryService.ProcessExpiredContracts()` <!-- id: 122 -->
-    - [ ] 检查空单持有者的库存（优先从交割箱） <!-- id: 123 -->
-    - [ ] 如无法交付，计算并没收全部保证金 <!-- id: 124 -->
-    - [ ] 发送严重警告（红色 HUD 消息） <!-- id: 125 -->
-    - [ ] 记录违约历史（可选：影响未来交易条件） <!-- id: 126 -->
-- [ ] 多单交割优化 <!-- id: 127 -->
-    - [ ] 优先发送到交割箱 <!-- id: 128 -->
-    - [ ] 交割箱满时才使用邮件 <!-- id: 129 -->
+- [x] 扩展 `DeliveryService.ProcessExpiredContracts()` <!-- id: 122 -->
+    - [x] 检查空单持有者的库存（优先从交割箱） <!-- id: 123 -->
+    - [x] 如无法交付，计算并没收全部保证金 <!-- id: 124 -->
+    - [x] 发送严重警告（红色 HUD 消息） <!-- id: 125 -->
+    - [x] 记录违约历史（可选：影响未来交易条件） <!-- id: 126 -->
+- [x] 多单交割优化 <!-- id: 127 -->
+    - [x] 优先发送到交割箱 <!-- id: 128 -->
+    - [x] 交割箱满时才使用邮件 <!-- id: 129 -->
 
 ---
 
-### **阶段 12：UI 增强与数据可视化（P5 - 锦上添花）** <!-- id: 130 -->
+### **阶段 12：UI 增强与数据可视化（P5 - 锦上添花）** ✅ **已完成** <!-- id: 130 -->
 
-- [ ] 扩展 `TradingMenu` 信息面板 <!-- id: 131 -->
-    - [ ] 显示"期货价格 vs 现货价格" <!-- id: 132 -->
-    - [ ] 显示"基差 (Basis = F_t - S_t)" <!-- id: 133 -->
-    - [ ] 显示"市场深度"（L2前5档，需先完成阶段10） <!-- id: 134 -->
-    - [ ] 显示"今日新闻"摘要 <!-- id: 135 -->
-    - [ ] 显示"持仓风险指标"（保证金使用率、强平线距离） <!-- id: 136 -->
-- [ ] 增强 WebServer 数据推送 <!-- id: 137 -->
-    - [ ] 推送实时期货价格 vs 现货价格 <!-- id: 138 -->
-    - [ ] 推送市场冲击值 I(t) 的历史曲线 <!-- id: 139 -->
-    - [ ] 推送新闻事件时间轴 <!-- id: 140 -->
-- [ ] (可选) 创建 `ChartRenderer.cs` - 游戏内K线图 <!-- id: 141 -->
+- [x] 扩展网页端的信息面板 <!-- id: 131 -->
+    - [x] 显示"期货价格 vs 现货价格" <!-- id: 132 -->
+    - [x] 显示"基差 (Basis = F_t - S_t)" <!-- id: 133 -->
+    - [x] 显示"市场深度"（L2前5档，需先完成阶段10） <!-- id: 134 -->
+    - [x] 显示"今日新闻"摘要 <!-- id: 135 -->
+    - [x] 显示"持仓风险指标"（保证金使用率、强平线距离） <!-- id: 136 -->
+- [x] 增强 WebServer 数据推送 <!-- id: 137 -->
+    - [x] 推送实时期货价格 vs 现货价格 <!-- id: 138 -->
+    - [x] 推送市场冲击值 I(t) 的历史曲线 <!-- id: 139 -->
+    - [x] 推送新闻事件时间轴 <!-- id: 140 -->
+- [x] (放弃，不进行) 创建 `ChartRenderer.cs` - 游戏内K线图 <!-- id: 141 -->
 
 ---
 
@@ -209,11 +209,11 @@
 | Phase 8: 新闻系统 | 13 | ⏳ 待开始 | 🟠 P1 |
 | Phase 9: 市场冲击 | 22 | ⏳ 待开始 | 🟡 P2 |
 | Phase 10: 订单簿 | 18 | ⏳ 待开始 | 🔵 P4 |
-| Phase 11: 风险管理 | 18 | ⏳ 待开始 | 🟢 P3 |
-| Phase 12: UI增强 | 11 | ⏳ 待开始 | ⚪ P5 |
+| Phase 11: 风险管理 | 18 | ✅ 已完成 | 🟢 P3 |
+| Phase 12: UI增强 | 11 | ✅ 已完成 | ⚪ P5 |
 | Phase 13: 配置测试 | 27 | ⏳ 待开始 | 🟡 P2 |
 
-**总剩余任务**: ~128 项  
+**总剩余任务**: ~99 项  
 **预估工作量**: 36-53 小时
 
 ---

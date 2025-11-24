@@ -10,7 +10,7 @@ using System.Linq;
 using StardewModdingAPI;
 using StardewValley;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.Pricing
 {
     /// <summary>
     /// 便利收益率服务（Convenience Yield Service）

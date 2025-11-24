@@ -69,7 +69,12 @@ namespace StardewCapital.Domain.Account
         }
 
         /// <summary>
-        /// 计算已占用的保证金
+        /// 已占用保证金（基于开仓成本）
+        /// </summary>
+        public decimal UsedMargin => (AverageCost * Math.Abs(Quantity)) / Leverage;
+
+        /// <summary>
+        /// 计算已占用的保证金（基于当前价格 - 维持保证金）
         /// </summary>
         /// <param name="currentPrice">当前市场价格</param>
         /// <returns>已占用保证金 = |市值| / 杠杆倍数</returns>

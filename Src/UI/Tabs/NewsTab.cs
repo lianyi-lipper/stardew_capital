@@ -9,7 +9,8 @@ using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewCapital.Services;
+using StardewCapital.Services.Market;
+using StardewCapital.Services.News;
 using StardewCapital.Domain.Market;
 using StardewValley;
 using StardewValley.Menus;
@@ -97,7 +98,7 @@ namespace StardewCapital.UI.Tabs
         public override void Draw(SpriteBatch b)
         {
             int leftX = XPositionOnScreen + 60;
-            int topY = YPositionOnScreen + 180;
+            int topY = YPositionOnScreen + 280;
             // ========== 绘制固定的市场情绪面板 ==========
             DrawMarketSentimentPanel(b, leftX, topY - 100);
     

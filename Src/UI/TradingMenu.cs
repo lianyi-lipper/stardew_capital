@@ -8,7 +8,9 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewCapital.Services;
+using StardewCapital.Services.Market;
+using StardewCapital.Services.Trading;
+using StardewCapital.Services.News;
 using StardewCapital.UI.Tabs;
 using StardewValley;
 using StardewValley.Menus;

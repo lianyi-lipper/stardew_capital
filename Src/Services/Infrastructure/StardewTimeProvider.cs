@@ -1,7 +1,7 @@
 using StardewCapital.Core.Time;
 using StardewValley;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.Infrastructure
 {
     /// <summary>
     /// 星露谷时间提供者

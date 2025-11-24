@@ -8,7 +8,8 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewCapital.Services;
+using StardewCapital.Services.Market;
+using StardewCapital.Services.Trading;
 using StardewValley;
 using StardewModdingAPI;
 

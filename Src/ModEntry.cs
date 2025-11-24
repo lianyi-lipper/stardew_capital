@@ -1,6 +1,10 @@
 using System;
 using StardewCapital.Core.Time;
-using StardewCapital.Services;
+using StardewCapital.Services.Market;
+using StardewCapital.Services.Pricing;
+using StardewCapital.Services.Trading;
+using StardewCapital.Services.News;
+using StardewCapital.Services.Infrastructure;
 using StardewCapital.UI;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -57,7 +61,7 @@ namespace StardewCapital
             _timeProvider = new StardewTimeProvider(_config);
             _clock = new MixedTimeClock(_timeProvider, _config);
             _priceEngine = new PriceEngine(_clock, _config);
-            _fundamentalEngine = new FundamentalEngine(Monitor);
+            _fundamentalEngine = new FundamentalEngine(Monitor, Helper);
             _convenienceYieldService = new ConvenienceYieldService(Monitor);
             _newsGenerator = new NewsGenerator(helper, Monitor);
             
@@ -75,11 +79,24 @@ namespace StardewCapital
             _scenarioManager.SetSwitchProbability(impactConfig.ScenarioSwitchProbability);
             Monitor.Log($"[Impact] Loaded config: Decay={impactConfig.DecayRate}, MA={impactConfig.MovingAveragePeriod}, SwitchProb={impactConfig.ScenarioSwitchProbability}", LogLevel.Info);
             
-            // 2. Initialize Market Manager
-            _marketManager = new MarketManager(
-                Monitor, _clock, _priceEngine, _fundamentalEngine, 
+            // 2. Initialize Market Manager (with new architecture)
+            var orderBookManager = new OrderBookManager(Monitor, _impactService, null!); // MarketManager set later
+            var priceUpdater = new MarketPriceUpdater(
+                Monitor, _clock, _priceEngine, _fundamentalEngine,
                 _convenienceYieldService, _newsGenerator,
-                _impactService, _scenarioManager, _config);
+                _impactService, _scenarioManager, _config,
+                null!, orderBookManager); // MarketManager set later
+            
+            _marketManager = new MarketManager(Monitor, orderBookManager, priceUpdater, _config);
+            
+            // Fix circular references using reflection
+            var orderBookManagerField = typeof(OrderBookManager).GetField("_marketManager", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            orderBookManagerField?.SetValue(orderBookManager, _marketManager);
+            
+            var priceUpdaterField = typeof(MarketPriceUpdater).GetField("_marketManager",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            priceUpdaterField?.SetValue(priceUpdater, _marketManager);
 
             // 3. Initialize Brokerage Service
             _brokerageService = new BrokerageService(_marketManager, _impactService, Monitor);

@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 using StardewModdingAPI;
 using StardewCapital.Domain.Market;
 
-namespace StardewCapital.Services
+namespace StardewCapital.Services.News
 {
     /// <summary>
     /// 新闻配置文件结构
