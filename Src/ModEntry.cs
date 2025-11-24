@@ -56,11 +56,15 @@ namespace StardewCapital
         {
             // 0. Load Config
             _config = helper.ReadConfig<ModConfig>();
+            
+            // Load Market Rules (New Architecture) - Moved up for dependency injection
+            var marketRules = helper.Data.ReadJsonFile<Config.MarketRules>("Assets/market_rules.json") ?? new Config.MarketRules();
+            Monitor.Log($"[MarketRules] Loaded. RiskFreeRate={marketRules.Macro.RiskFreeRate}, Decay={marketRules.MarketMicrostructure.DecayRate}", LogLevel.Info);
 
             // 1. Initialize Core Services
             _timeProvider = new StardewTimeProvider(_config);
             _clock = new MixedTimeClock(_timeProvider, _config);
-            _priceEngine = new PriceEngine(_clock, _config);
+            _priceEngine = new PriceEngine(_clock, marketRules);
             _fundamentalEngine = new FundamentalEngine(Monitor, Helper);
             _convenienceYieldService = new ConvenienceYieldService(Monitor);
             _newsGenerator = new NewsGenerator(helper, Monitor);
@@ -69,23 +73,19 @@ namespace StardewCapital
             _scenarioManager = new ScenarioManager(Monitor);
             _impactService = new ImpactService(Monitor);
             
-            // Load impact system configuration
-            var impactConfig = helper.Data.ReadJsonFile<ImpactConfig>("Assets/impact_config.json") ?? new ImpactConfig();
-            _impactService.Configure(
-                impactConfig.DecayRate,
-                impactConfig.MovingAveragePeriod,
-                impactConfig.MaxImpactClamp
-            );
-            _scenarioManager.SetSwitchProbability(impactConfig.ScenarioSwitchProbability);
-            Monitor.Log($"[Impact] Loaded config: Decay={impactConfig.DecayRate}, MA={impactConfig.MovingAveragePeriod}, SwitchProb={impactConfig.ScenarioSwitchProbability}", LogLevel.Info);
+            // Configure Impact Service using Market Rules
+            _impactService.Configure(marketRules.MarketMicrostructure);
+            _scenarioManager.SetSwitchProbability(marketRules.MarketMicrostructure.ScenarioSwitchProbability);
             
             // 2. Initialize Market Manager (with new architecture)
             var orderBookManager = new OrderBookManager(Monitor, _impactService, null!); // MarketManager set later
             var priceUpdater = new MarketPriceUpdater(
                 Monitor, _clock, _priceEngine, _fundamentalEngine,
                 _convenienceYieldService, _newsGenerator,
-                _impactService, _scenarioManager, _config,
-                null!, orderBookManager); // MarketManager set later
+                _impactService, _scenarioManager, _config, 
+                null!, // MarketManager (arg 10)
+                orderBookManager, // OrderBookManager (arg 11)
+                marketRules); // MarketRules (arg 12)
             
             _marketManager = new MarketManager(Monitor, orderBookManager, priceUpdater, _config);
             

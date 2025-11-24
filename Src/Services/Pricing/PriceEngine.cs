@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using StardewCapital.Core.Math;
 using StardewCapital.Core.Time;
 using StardewCapital.Domain.Instruments;
+using StardewCapital.Config;
 
 namespace StardewCapital.Services.Pricing
 {
@@ -18,7 +19,7 @@ namespace StardewCapital.Services.Pricing
     public class PriceEngine
     {
         private readonly MixedTimeClock _clock;
-        private readonly ModConfig _config;
+        private readonly MarketRules _rules;
         private readonly Random _random = new Random();
 
         // 配置参数（未来可移至配置文件）
@@ -28,17 +29,20 @@ namespace StardewCapital.Services.Pricing
         /// <summary>日内波动率：控制tick间价格噪声大小（0.5%左右）</summary>
         private const double INTRA_VOLATILITY = 0.005;
 
-        public PriceEngine(MixedTimeClock clock, ModConfig config)
+        public PriceEngine(MixedTimeClock clock, MarketRules rules)
         {
             _clock = clock;
-            _config = config;
+            _rules = rules;
         }
 
         /// <summary>
         /// Updates the price of an instrument for the current tick.
         /// Uses Model 4 (Brownian Bridge) for intraday movement.
         /// </summary>
-        public void UpdatePrice(IInstrument instrument, double targetPrice)
+        /// <param name="instrument">要更新的金融产品</param>
+        /// <param name="targetPrice">目标价格</param>
+        /// <param name="timeStep">这一帧的时间步长（当前帧 timeRatio - 上一帧 timeRatio）</param>
+        public void UpdatePrice(IInstrument instrument, double targetPrice, double timeStep)
         {
             double currentPrice = instrument.CurrentPrice;
             double timeRatio = _clock.GetDayProgress();
@@ -47,18 +51,14 @@ namespace StardewCapital.Services.Pricing
             double nextPrice = BrownianBridge.CalculateNextTickPrice(
                 currentPrice, 
                 targetPrice, 
-                timeRatio, 
+                timeRatio,
+                timeStep,  // 动态时间步长
                 INTRA_VOLATILITY
             );
 
             // Ensure price doesn't go negative
             instrument.CurrentPrice = System.Math.Max(0.01, nextPrice);
         }
-
-        /// <summary>
-        /// Calculates the target price for the end of the day (Model 2: GBM).
-        /// This should be called once at the start of the day or when news happens.
-        /// </summary>
         public double CalculateDailyTarget(double currentPrice, double fundamentalValue, int daysToMaturity)
         {
             return GBM.CalculateNextPrice(
@@ -99,8 +99,8 @@ namespace StardewCapital.Services.Pricing
             double convenienceYield)
         {
             // 从配置文件读取市场参数
-            double r = _config.RiskFreeRate;      // 无风险利率
-            double phi = _config.StorageCost;     // 仓储成本
+            double r = _rules.Macro.RiskFreeRate;      // 无风险利率
+            double phi = _rules.Instruments.Futures.StorageCost;     // 仓储成本
             double q = convenienceYield;          // 便利收益率（动态）
 
             // 计算指数部分：(r + φ - q) × τ

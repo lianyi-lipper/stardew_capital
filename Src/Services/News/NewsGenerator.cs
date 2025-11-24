@@ -158,6 +158,51 @@ namespace StardewCapital.Services.News
         }
 
         /// <summary>
+        /// 生成盘中突发新闻 (Breaking News)
+        /// 从配置中筛选高严重度、短持续时间的新闻
+        /// </summary>
+        /// <param name="currentDay">当前日期（绝对日期）</param>
+        /// <param name="currentTimeRatio">当前时间进度（0.0-1.0）</param>
+        /// <param name="availableCommodities">可用商品列表</param>
+        /// <returns>突发新闻事件，如果未触发则返回null</returns>
+        public NewsEvent? GenerateIntradayNews(int currentDay, double currentTimeRatio, List<string> availableCommodities)
+        {
+            if (availableCommodities.Count == 0 || _newsTemplates.Count == 0)
+                return null;
+            
+            // 1. 筛选适合盘中触发的新闻模板（高严重度）
+            var intradayCandidates = _newsTemplates
+                .Where(t => t.Severity == "high" || t.Severity == "critical")
+                .ToList();
+            
+            if (intradayCandidates.Count == 0)
+                return null;
+            
+            // 2. 随机选择一个模板
+            var template = intradayCandidates[_random.Next(intradayCandidates.Count)];
+            
+            // 3. 选择受影响商品
+            var affectedCommodity = SelectAffectedCommodity(template.Scope, availableCommodities);
+            if (affectedCommodity == null)
+                return null;
+            
+            // 4. 创建新闻实例
+            var newsInstance = CreateNewsInstance(template, currentDay, affectedCommodity);
+            
+            // 5. 设置盘中新闻的特殊时间参数（仅当天有效）
+            newsInstance.Timing.AnnouncementDay = currentDay;
+            newsInstance.Timing.EffectiveDays = new int[] { currentDay, currentDay };
+            
+            _monitor.Log(
+                $"[IntradayNews] Generated: {newsInstance.Title} ({affectedCommodity}) " +
+                $"D:{newsInstance.Impact.DemandImpact:+0;-0;0} S:{newsInstance.Impact.SupplyImpact:+0;-0;0}",
+                LogLevel.Info
+            );
+            
+            return newsInstance;
+        }
+
+        /// <summary>
         /// 创建新闻实例（应用随机化）
         /// </summary>
         private NewsEvent CreateNewsInstance(NewsTemplate template, int day, string commodity)

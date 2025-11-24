@@ -8,6 +8,7 @@
 using StardewCapital.Domain.Market;
 using StardewModdingAPI;
 using System;
+using StardewCapital.Config;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -89,25 +90,18 @@ namespace StardewCapital.Services.Market
             _currentImpact = new Dictionary<string, double>();
             _impactHistory = new Dictionary<string, Queue<double>>();
             _priceHistory = new Dictionary<string, Queue<double>>();
-
-            _monitor.Log("[ImpactService] 初始化完成", LogLevel.Info);
         }
 
         /// <summary>
-        /// 配置参数（从配置文件加载）
+        /// 配置市场微观结构参数
         /// </summary>
-        public void Configure(double decayRate, int maPeriod, double? maxClamp)
+        public void Configure(MarketMicrostructureConfig config)
         {
-            _decayRate = Math.Clamp(decayRate, 0.8, 0.99);
-            _movingAveragePeriod = Math.Max(5, maPeriod);
-            _maxImpactClamp = maxClamp;
-
-            _monitor.Log(
-                $"[ImpactService] 参数配置: DecayRate={_decayRate}, MA={_movingAveragePeriod}, MaxClamp={_maxImpactClamp}",
-                LogLevel.Debug
-            );
+            _decayRate = config.DecayRate;
+            _movingAveragePeriod = config.MovingAveragePeriod;
+            _maxImpactClamp = config.MaxImpactClamp;
+            // Scenarios are handled by ScenarioManager, but we use the parameters passed in UpdateImpact
         }
-
         /// <summary>
         /// 记录玩家交易（由 BrokerageService 调用）
         /// 

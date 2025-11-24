@@ -21,9 +21,10 @@ namespace StardewCapital.Core.Math
         /// <param name="currentPrice">P_tau：当前价格</param>
         /// <param name="targetPrice">P_target：当天的目标价格（收盘价）</param>
         /// <param name="timeRatio">tau：当前时间进度（0.0 = 开盘，1.0 = 收盘）</param>
+        /// <param name="timeStep">dt：这一帧的时间步长（当前帧 timeRatio - 上一帧 timeRatio）</param>
         /// <param name="intraVolatility">sigma_intra：日内波动率参数</param>
         /// <returns>P_{tau+1}：下一帧的价格</returns>
-        public static double CalculateNextTickPrice(double currentPrice, double targetPrice, double timeRatio, double intraVolatility)
+        public static double CalculateNextTickPrice(double currentPrice, double targetPrice, double timeRatio, double timeStep, double intraVolatility)
         {
             // 1. 计算剩余时间比例 (T_remain = 1.0 - tau)
             double t_remain = 1.0 - timeRatio;
@@ -32,10 +33,10 @@ namespace StardewCapital.Core.Math
             if (t_remain <= 0.001) return targetPrice;
 
             // 2. 计算引力（均值回归）
-            // Gravity = (Target - Current) * (dt / T_remain)
+            // Gravity = (Target - Current) * (timeStep / T_remain)
             // 引力将价格拉向目标，时间越晚引力越强
-            double dt = 0.001; // 微小时间步长
-            double gravity = (targetPrice - currentPrice) * (dt / t_remain);
+            // 使用动态 timeStep 而非硬编码，确保在时间倍速变化时引力计算正确
+            double gravity = (targetPrice - currentPrice) * (timeStep / t_remain);
 
             // 3. 计算波动率微笑因子 (Psi)
             // Psi(tau) = (1 + alpha * e^(-lambda * tau)) * sqrt(T_remain)
@@ -50,7 +51,7 @@ namespace StardewCapital.Core.Math
 
             // 4. 计算动态噪声
             double epsilon = StatisticsUtils.NextGaussian();
-            double noise = intraVolatility * psi * epsilon;
+            double noise = intraVolatility * psi * epsilon * System.Math.Sqrt(timeStep);
 
             // 5. 计算下一价格 = 当前价格 + 引力 + 噪声
             return currentPrice + gravity + noise;

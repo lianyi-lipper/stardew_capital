@@ -46,6 +46,18 @@ namespace StardewCapital.Domain.Instruments
         /// 用于计算涨跌额和涨跌幅，在每日 OnNewDay 时记录
         /// </summary>
         public double OpenPrice { get; set; }
+
+        /// <summary>
+        /// 隔夜情绪池（未消化的价差）
+        /// 当触发熔断时，将未消化的价差存储在此字段，次日开盘时叠加
+        /// </summary>
+        public double Gap { get; set; } = 0.0;
+
+        /// <summary>
+        /// 熔断状态标志
+        /// 当日触发熔断后，此标志设为 true，防止重复触发
+        /// </summary>
+        public bool CircuitBreakerActive { get; set; } = false;
         
         /// <summary>保证金比例（默认0.1，即10%保证金）</summary>
         public double MarginRatio { get; private set; }

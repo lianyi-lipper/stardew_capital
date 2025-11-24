@@ -1,0 +1,80 @@
+{
+    "//": "====================================================================",
+    "//": "市场规则配置文件 (Market Rules Configuration)",
+    "//": "用途：定义游戏经济系统的核心数学常数和规则",
+    "//": "注意：此文件包含核心数值策划参数，修改可能导致经济模型失衡",
+    "//": "====================================================================",
+    "//": "=== 宏观经济参数 (所有金融产品公用) ===",
+    "macro": {
+        "riskFreeRate": 0.002,
+        "_comment_riskFreeRate": "无风险利率（每日）| 默认: 0.002 (0.2%) | 含义: 资金的时间价值"
+    },
+    "//": "=== 市场微观结构 (交易机制与冲击) ===",
+    "marketMicrostructure": {
+        "decayRate": 0.95,
+        "_comment_decayRate": "冲击衰减率（每帧）| 范围: 0.8-0.99 | 默认: 0.95",
+        "movingAveragePeriod": 20,
+        "_comment_movingAveragePeriod": "移动平均线周期 | 范围: 5-50 | 默认: 20",
+        "scenarioSwitchProbability": 0.3,
+        "_comment_scenarioSwitchProbability": "剧本切换概率（每日）| 范围: 0.0-1.0 | 默认: 0.3",
+        "maxImpactClamp": 30.0,
+        "_comment_maxImpactClamp": "冲击值上限（金币）| 默认: 30.0",
+        "scenarios": {
+            "_comment": "以下参数为预设值，修改需谨慎。k_smart、k_trend、k_fomo的单位为g/单位",
+            "deadMarket": {
+                "smartMoneyStrength": 0.8,
+                "trendFollowerStrength": 0.1,
+                "fomoStrength": 0.0,
+                "asymmetricDown": 1.0,
+                "description": "死水一潭 - 价格强力回归基本面，无跟风情绪"
+            },
+            "irrationalExuberance": {
+                "smartMoneyStrength": 0.0,
+                "trendFollowerStrength": 0.3,
+                "fomoStrength": 0.9,
+                "asymmetricDown": 1.0,
+                "description": "非理性繁荣 - 聪明钱消失，极端情绪主导"
+            },
+            "panicSelling": {
+                "smartMoneyStrength": 0.3,
+                "trendFollowerStrength": 0.4,
+                "fomoStrength": 0.6,
+                "asymmetricDown": 2.5,
+                "description": "恐慌踩踏 - 下跌时情绪放大2.5倍"
+            },
+            "shortSqueeze": {
+                "smartMoneyStrength": -0.5,
+                "trendFollowerStrength": 0.5,
+                "fomoStrength": 0.8,
+                "asymmetricDown": 1.0,
+                "description": "轧空风暴 - 聪明钱被迫反向操作"
+            }
+        }
+    },
+    "//": "=== 熔断机制 (尾盘价格保护) ===",
+    "circuitBreaker": {
+        "enabled": true,
+        "_comment_enabled": "是否启用熔断机制 | 默认: true",
+        "timeThreshold": 0.95,
+        "_comment_timeThreshold": "触发熔断的时间阈值（timeRatio）| 默认: 0.95 表示剩余时间 < 5%",
+        "maxMove": 15.0,
+        "_comment_maxMove": "单日最大涨跌幅（金币）| 默认: 15.0"
+    },
+    "//": "=== 衍生品配置 (按资产类别分类) ===",
+    "instruments": {
+        "futures": {
+            "storageCost": 0.005,
+            "_comment_storageCost": "仓储成本（每日）| 默认: 0.005 (0.5%) | 含义: 持有现货的腐败/损耗成本",
+            "baseConvenienceYield": 0.001,
+            "_comment_baseConvenienceYield": "基础便利收益率（每日）| 默认: 0.001 (0.1%) | 含义: 持有现货的基础好处"
+        },
+        "//": "=== 未来预留：期权配置 ===",
+        "options": {
+            "_comment": "Reserved for future use"
+        },
+        "//": "=== 未来预留：股票/债券 ===",
+        "stocks": {
+            "_comment": "Reserved for future use"
+        }
+    }
+}
