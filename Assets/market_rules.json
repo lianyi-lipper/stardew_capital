@@ -20,7 +20,7 @@
         "maxImpactClamp": 30.0,
         "_comment_maxImpactClamp": "冲击值上限（金币）| 默认: 30.0",
         "scenarios": {
-            "_comment": "以下参数为预设值，修改需谨慎。k_smart、k_trend、k_fomo的单位为g/单位",
+
             "deadMarket": {
                 "smartMoneyStrength": 0.8,
                 "trendFollowerStrength": 0.1,
