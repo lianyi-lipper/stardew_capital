@@ -52,7 +52,7 @@ namespace StardewCapital.Services.Infrastructure
         /// </summary>
         /// <param name="time">Stardew时间（例：1350代表13:50）</param>
         /// <returns>从午夜0点开始的总分钟数</returns>
-        private int ToMinutes(int time)
+        public int ToMinutes(int time)
         {
             return (time / 100) * 60 + (time % 100);
         }

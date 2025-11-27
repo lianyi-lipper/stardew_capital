@@ -177,14 +177,14 @@ namespace StardewCapital.Services.Pricing
             // 6. 应用公式：S_T = P_base × λ_s × (D / S)
             double fundamentalValue = config.BasePrice * seasonalMultiplier * (totalDemand / totalSupply);
 
-            // 7. 调试日志
-            _monitor.Log(
-                $"[FundamentalEngine] {commodityName}: " +
-                $"P_base={config.BasePrice:F2}g, λ_s={seasonalMultiplier:F2}, " +
-                $"D={totalDemand:F0}, S={totalSupply:F0}, " +
-                $"S_T={fundamentalValue:F2}g",
-                LogLevel.Debug
-            );
+            // 7. 调试日志（已注释，避免刷屏）
+            // _monitor.Log(
+            //     $"[FundamentalEngine] {commodityName}: " +
+            //     $"P_base={config.BasePrice:F2}g, λ_s={seasonalMultiplier:F2}, " +
+            //     $"D={totalDemand:F0}, S={totalSupply:F0}, " +
+            //     $"S_T={fundamentalValue:F2}g",
+            //     LogLevel.Debug
+            // );
 
             return fundamentalValue;
         }

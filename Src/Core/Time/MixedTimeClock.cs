@@ -1,4 +1,5 @@
 using System;
+using StardewValley;
 
 namespace StardewCapital.Core.Time
 {
@@ -49,9 +50,17 @@ namespace StardewCapital.Core.Time
 
         /// <summary>
         /// 检查游戏时间是否暂停
+        /// 特殊处理：TradingMenu打开时，时间不应被视为暂停
         /// </summary>
         public bool IsPaused()
         {
+            // 如果TradingMenu打开，时间不暂停
+            if (Game1.activeClickableMenu != null && 
+                Game1.activeClickableMenu.GetType().Name == "TradingMenu")
+            {
+                return false;
+            }
+            
             return _timeProvider.IsPaused;
         }
     }

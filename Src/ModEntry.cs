@@ -39,6 +39,9 @@ namespace StardewCapital
         private BrokerageService _brokerageService = null!;
         private PersistenceService _persistenceService = null!;
         private DeliveryService _deliveryService = null!;
+        
+        // 配置变更检测
+        private ModConfig _lastKnownConfig = null!;
 
         /// <summary>
         /// Mod入口方法
@@ -56,6 +59,7 @@ namespace StardewCapital
         {
             // 0. Load Config
             _config = helper.ReadConfig<ModConfig>();
+            _lastKnownConfig = helper.ReadConfig<ModConfig>(); // 保存初始配置用于检测变更
             
             // Load Market Rules (New Architecture) - Moved up for dependency injection
             var marketRules = helper.Data.ReadJsonFile<Config.MarketRules>("Assets/market_rules.json") ?? new Config.MarketRules();
@@ -77,7 +81,23 @@ namespace StardewCapital
             _impactService.Configure(marketRules.MarketMicrostructure);
             _scenarioManager.SetSwitchProbability(marketRules.MarketMicrostructure.ScenarioSwitchProbability);
             
-            // 2. Initialize Market Manager (with new architecture)
+            // 2. Initialize Market State Manager
+            var marketStateManager = new Services.Market.MarketStateManager(Monitor);
+            
+            // 2.5 Initialize Generators
+            var futuresGenerator = new Services.Pricing.Generators.FuturesShadowGenerator(
+                _config,
+                _timeProvider,
+                _newsGenerator,
+                _fundamentalEngine,
+                marketRules  // \u65b0\u589e\uff1a\u4f20\u5165MarketRules
+            );
+            marketStateManager.RegisterGenerator("CommodityFutures", futuresGenerator);
+            
+            // 3. Initialize Market Services
+            var marketTimeCalculator = new Services.Market.MarketTimeCalculator();
+            
+            // 4. Initialize Market Manager (with new architecture)
             var orderBookManager = new OrderBookManager(Monitor, _impactService, null!); // MarketManager set later
             var priceUpdater = new MarketPriceUpdater(
                 Monitor, _clock, _priceEngine, _fundamentalEngine,
@@ -87,7 +107,32 @@ namespace StardewCapital
                 orderBookManager, // OrderBookManager (arg 11)
                 marketRules); // MarketRules (arg 12)
             
-            _marketManager = new MarketManager(Monitor, orderBookManager, priceUpdater, _config);
+            var dailyMarketOpener = new Services.Market.DailyMarketOpener(
+                Monitor,
+                _scenarioManager,
+                null!, // MarketManager - set later via reflection
+                orderBookManager,
+                marketStateManager,
+                marketRules,
+                _priceEngine,              // 新增：基差计算
+                _convenienceYieldService   // 新增：便利收益计算
+            );
+            
+            var newsSchedulePlayer = new Services.Market.NewsSchedulePlayer(
+                Monitor,
+                marketStateManager,
+                marketTimeCalculator
+            );
+            
+            _marketManager = new MarketManager(
+                Monitor, 
+                orderBookManager, 
+                priceUpdater,
+                marketStateManager,
+                dailyMarketOpener,
+                newsSchedulePlayer,
+                _config
+            );
             
             // Fix circular references using reflection
             var orderBookManagerField = typeof(OrderBookManager).GetField("_marketManager", 
@@ -97,6 +142,10 @@ namespace StardewCapital
             var priceUpdaterField = typeof(MarketPriceUpdater).GetField("_marketManager",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             priceUpdaterField?.SetValue(priceUpdater, _marketManager);
+            
+            var dailyOpenerField = typeof(Services.Market.DailyMarketOpener).GetField("_marketManager",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            dailyOpenerField?.SetValue(dailyMarketOpener, _marketManager);
 
             // 3. Initialize Brokerage Service
             _brokerageService = new BrokerageService(_marketManager, _impactService, Monitor);
@@ -106,7 +155,7 @@ namespace StardewCapital
             _marketManager.SetBrokerageService(_brokerageService);
 
             // 4. Initialize Persistence & Delivery
-            _persistenceService = new PersistenceService(helper, Monitor, _brokerageService);
+            _persistenceService = new PersistenceService(helper, Monitor, _brokerageService, marketStateManager);
             var exchangeService = new ExchangeService();
             var exchangeMenuController = new ExchangeMenuController(helper, Monitor, exchangeService);
             _deliveryService = new DeliveryService(Monitor, _brokerageService, _marketManager, exchangeService);
@@ -114,6 +163,25 @@ namespace StardewCapital
             // 5. Initialize Web Server
             _webServer = new WebServer(Monitor, _marketManager, _brokerageService, helper.DirectoryPath);
             _webServer.Start();
+
+            // 6. Apply Harmony Patches (for non-pausing time)
+            var harmony = new HarmonyLib.Harmony(this.ModManifest.UniqueID);
+            
+            // Initialize TimePatch with Monitor
+            Patches.TimePatch.Initialize(Monitor);
+            
+            // Apply patches
+            harmony.Patch(
+                original: HarmonyLib.AccessTools.Method(typeof(StardewValley.Game1), nameof(StardewValley.Game1.shouldTimePass)),
+                postfix: new HarmonyLib.HarmonyMethod(typeof(Patches.TimePatch), nameof(Patches.TimePatch.ShouldTimePass_Postfix))
+            );
+            
+            harmony.Patch(
+                original: HarmonyLib.AccessTools.Method(typeof(StardewValley.Game1), "_update"),
+                postfix: new HarmonyLib.HarmonyMethod(typeof(Patches.TimePatch), nameof(Patches.TimePatch.Update_Postfix))
+            );
+            
+            Monitor.Log("[Harmony] Time patches applied successfully", LogLevel.Info);
 
             // Events
             helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
@@ -141,6 +209,15 @@ namespace StardewCapital
         /// </summary>
         private void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
+            // ✅ 检测游戏内配置变更（每日检查）
+            var currentConfig = Helper.ReadConfig<ModConfig>();
+            
+            if (currentConfig.OpeningTime != _lastKnownConfig.OpeningTime ||
+                currentConfig.ClosingTime != _lastKnownConfig.ClosingTime)
+            {
+                DetectAndScheduleConfigChange(currentConfig);
+            }
+            
             _marketManager.OnNewDay();
         }
 
@@ -151,7 +228,38 @@ namespace StardewCapital
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
         {
             _persistenceService.LoadData();
+            
+            // ✅ 检测游戏外配置变更（读档时检查）
+            var currentConfig = Helper.ReadConfig<ModConfig>();
+            var marketStateManager = typeof(MarketManager)
+                .GetField("_marketStateManager", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                .GetValue(_marketManager) as Services.Market.MarketStateManager;
+            
+            var saveData = marketStateManager?.GetSaveData();
+            
+            if (saveData != null)
+            {
+                // 比较存档中保存的配置和当前磁盘上的配置
+                if (currentConfig.OpeningTime != saveData.SavedOpeningTime ||
+                    currentConfig.ClosingTime != saveData.SavedClosingTime)
+                {
+                    Monitor.Log(
+                        $"[Config] Out-of-game modification detected: " +
+                        $"Saved({saveData.SavedOpeningTime}-{saveData.SavedClosingTime}) → " +
+                        $"Current({currentConfig.OpeningTime}-{currentConfig.ClosingTime})",
+                        LogLevel.Warn
+                    );
+                    
+                    DetectAndScheduleConfigChange(currentConfig);
+                }
+            }
+            
             _marketManager.InitializeMarket();
+            
+            // 触发季节初始化（预计算价格和新闻）
+            Monitor.Log("[ModEntry] Triggering season initialization...", LogLevel.Info);
+            _marketManager.OnSeasonStarted();
         }
 
         /// <summary>
@@ -194,6 +302,27 @@ namespace StardewCapital
 
             // Pass the tick count to the manager
             _marketManager.Update((int)e.Ticks);
+        }
+
+        /// <summary>
+        /// 检测并调度配置变更（辅助方法）
+        /// </summary>
+        private void DetectAndScheduleConfigChange(ModConfig newConfig)
+        {
+            var marketStateManager = typeof(MarketManager)
+                .GetField("_marketStateManager", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                .GetValue(_marketManager) as Services.Market.MarketStateManager;
+            
+            bool scheduled = marketStateManager?.TryScheduleConfigChange(
+                newConfig,
+                Game1.dayOfMonth
+            ) ?? false;
+            
+            if (scheduled)
+            {
+                _lastKnownConfig = newConfig;
+            }
         }
 
         /// <summary>

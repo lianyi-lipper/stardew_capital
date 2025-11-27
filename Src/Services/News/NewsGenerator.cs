@@ -165,12 +165,22 @@ namespace StardewCapital.Services.News
         /// <param name="currentTimeRatio">当前时间进度（0.0-1.0）</param>
         /// <param name="availableCommodities">可用商品列表</param>
         /// <returns>突发新闻事件，如果未触发则返回null</returns>
-        public NewsEvent? GenerateIntradayNews(int currentDay, double currentTimeRatio, List<string> availableCommodities)
+        public NewsEvent? GenerateIntradayNews(
+            int currentDay, 
+            double currentTimeRatio, 
+            List<string> availableCommodities,
+            double dailyProbability = 0.1)  // 新增：每日发生概率
         {
+            // 1. 每日概率检查 ← 新增！
+            if (_random.NextDouble() > dailyProbability)
+            {
+                return null;  // 未触发概率，今天不生成盘中新闻
+            }
+            
             if (availableCommodities.Count == 0 || _newsTemplates.Count == 0)
                 return null;
             
-            // 1. 筛选适合盘中触发的新闻模板（高严重度）
+            // 2. 筛选适合盘中触发的新闻模板（高严重度）
             var intradayCandidates = _newsTemplates
                 .Where(t => t.Severity == "high" || t.Severity == "critical")
                 .ToList();
@@ -178,18 +188,18 @@ namespace StardewCapital.Services.News
             if (intradayCandidates.Count == 0)
                 return null;
             
-            // 2. 随机选择一个模板
+            // 3. 随机选择一个模板
             var template = intradayCandidates[_random.Next(intradayCandidates.Count)];
             
-            // 3. 选择受影响商品
+            // 4. 选择受影响商品
             var affectedCommodity = SelectAffectedCommodity(template.Scope, availableCommodities);
             if (affectedCommodity == null)
                 return null;
             
-            // 4. 创建新闻实例
+            // 5. 创建新闻实例
             var newsInstance = CreateNewsInstance(template, currentDay, affectedCommodity);
             
-            // 5. 设置盘中新闻的特殊时间参数（仅当天有效）
+            // 6. 设置盘中新闻的特殊时间参数（仅当天有效）
             newsInstance.Timing.AnnouncementDay = currentDay;
             newsInstance.Timing.EffectiveDays = new int[] { currentDay, currentDay };
             

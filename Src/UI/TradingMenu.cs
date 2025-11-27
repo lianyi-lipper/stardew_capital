@@ -71,7 +71,7 @@ namespace StardewCapital.UI
             ScenarioManager scenarioManager,
             ImpactService impactService,
             IMonitor monitor)
-            : base(Game1.viewport.Width / 2 - 400, Game1.viewport.Height / 2 - 300, 800, 600, true)
+            : base(Game1.viewport.Width / 2 - 400, Game1.viewport.Height / 2 - 300, 800, 600, false)
         {
             _marketManager = marketManager;
             _brokerageService = brokerageService;

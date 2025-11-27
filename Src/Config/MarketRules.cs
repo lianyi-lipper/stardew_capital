@@ -30,6 +30,16 @@ namespace StardewCapital.Config
         public CircuitBreakerConfig CircuitBreaker { get; set; } = new();
 
         /// <summary>
+        /// 虚拟流量配置
+        /// </summary>
+        public VirtualFlowConfig VirtualFlow { get; set; } = new();
+
+        /// <summary>
+        /// NPC代理配置
+        /// </summary>
+        public NpcAgentsConfig NpcAgents { get; set; } = new();
+
+        /// <summary>
         /// 具体金融工具配置
         /// </summary>
         public InstrumentConfig Instruments { get; set; } = new();
@@ -80,6 +90,13 @@ namespace StardewCapital.Config
         /// 是否启用盘中突发新闻
         /// </summary>
         public bool Enabled { get; set; } = true;
+
+        /// <summary>
+        /// 盘中新闻每日发生概率（0.0-1.0）
+        /// 每天开盘时检查，决定当天是否可能生成盘中新闻
+        /// 建议值: 0.1 表示每天有10%概率发生盘中新闻
+        /// </summary>
+        public double IntradayNewsProbability { get; set; } = 0.1;
 
         /// <summary>
         /// 盘中新闻触发概率（每次检查时）
@@ -153,5 +170,25 @@ namespace StardewCapital.Config
         /// 基础便利收益率（每日）
         /// </summary>
         public double BaseConvenienceYield { get; set; } = 0.001;
+    }
+
+    public class VirtualFlowConfig
+    {
+        public double LiquidityCoefficient { get; set; } = 10.0;
+        public int MaxFlowPerTick { get; set; } = 500;
+    }
+
+    public class NpcAgentsConfig
+    {
+        public AgentConfig SmartMoney { get; set; } = new();
+        public AgentConfig TrendFollowers { get; set; } = new();
+        public AgentConfig FomoTraders { get; set; } = new();
+    }
+
+    public class AgentConfig
+    {
+        public double BaseStrength { get; set; } = 0.05;
+        public double Threshold { get; set; } = 0.5;
+        public int MovingAveragePeriod { get; set; } = 20;
     }
 }

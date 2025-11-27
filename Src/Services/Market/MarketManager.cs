@@ -26,6 +26,9 @@ namespace StardewCapital.Services.Market
         private readonly IMonitor _monitor;
         private readonly OrderBookManager _orderBookManager;
         private readonly MarketPriceUpdater _priceUpdater;
+        private readonly MarketStateManager _marketStateManager;
+        private readonly DailyMarketOpener _dailyMarketOpener;
+        private readonly NewsSchedulePlayer _newsSchedulePlayer;
         private readonly ModConfig _config;
         private ClearingService? _clearingService;
         
@@ -35,11 +38,17 @@ namespace StardewCapital.Services.Market
             IMonitor monitor, 
             OrderBookManager orderBookManager,
             MarketPriceUpdater priceUpdater,
+            MarketStateManager marketStateManager,
+            DailyMarketOpener dailyMarketOpener,
+            NewsSchedulePlayer newsSchedulePlayer,
             ModConfig config)
         {
             _monitor = monitor;
             _orderBookManager = orderBookManager;
             _priceUpdater = priceUpdater;
+            _marketStateManager = marketStateManager;
+            _dailyMarketOpener = dailyMarketOpener;
+            _newsSchedulePlayer = newsSchedulePlayer;
             _config = config;
             
             _instruments = new List<IInstrument>();
@@ -113,13 +122,68 @@ namespace StardewCapital.Services.Market
         }
 
         /// <summary>
+        /// 处理新季节开始的逻辑
+        /// 调用预计算生成整个季度的市场数据
+        /// </summary>
+        public void OnSeasonStarted()
+        {
+            _monitor.Log("[Market] New season started, initializing market state...", LogLevel.Info);
+            
+            // 获取当前季节和年份
+            var currentSeason = GetCurrentSeason();
+            int currentYear = Game1.year;
+            
+            // 调用MarketStateManager进行预计算
+            _marketStateManager.InitializeSeason(
+                currentSeason,
+                currentYear,
+                _instruments
+            );
+            
+            // 通知NewsSchedulePlayer新季节开始
+            _newsSchedulePlayer.OnNewSeason();
+            
+            _monitor.Log($"[Market] Season {currentSeason} {currentYear} initialized", LogLevel.Info);
+        }
+
+        /// <summary>
+        /// 获取当前季节
+        /// </summary>
+        private Domain.Market.Season GetCurrentSeason()
+        {
+            return Game1.currentSeason?.ToLower() switch
+            {
+                "spring" => Domain.Market.Season.Spring,
+                "summer" => Domain.Market.Season.Summer,
+                "fall" => Domain.Market.Season.Fall,
+                "winter" => Domain.Market.Season.Winter,
+                _ => Domain.Market.Season.Spring
+            };
+        }
+
+        /// <summary>
         /// 处理新一天开始的逻辑
         /// </summary>
         public void OnNewDay()
         {
-            _priceUpdater.OnNewDay();
+            int currentDay = Game1.dayOfMonth;
             
-            // 执行每日结算
+            // 1. 检查是否是新季节（春季第1天）
+            if (currentDay == 1)
+            {
+                OnSeasonStarted();
+            }
+            
+            // 2. 调用新的DailyMarketOpener（替代旧的_priceUpdater.OnNewDay()）
+            _dailyMarketOpener.OnNewDay(
+                currentDay,
+                _priceUpdater.GetDailyTargets()
+            );
+            
+            // 3. 清理过期新闻
+            _newsSchedulePlayer.CleanupExpiredNews(currentDay);
+            
+            // 4. 执行每日结算
             _clearingService?.DailySettlement();
         }
 
@@ -128,6 +192,19 @@ namespace StardewCapital.Services.Market
         /// </summary>
         public void Update(int currentTick)
         {
+            // 1. 触发预定新闻
+            if (_marketStateManager.IsInitialized())
+            {
+                int currentDay = Game1.dayOfMonth;
+                double currentTimeRatio = _priceUpdater.GetDayProgress();
+                
+                _newsSchedulePlayer.CheckAndTriggerScheduledNews(
+                    currentDay,
+                    currentTimeRatio
+                );
+            }
+            
+            // 2. 更新价格（保持原有逻辑）
             _priceUpdater.Update(currentTick);
         }
         
@@ -185,6 +262,14 @@ namespace StardewCapital.Services.Market
         public List<double> GetImpactHistory(string commodityId)
         {
             return _priceUpdater.GetImpactHistory(commodityId);
+        }
+
+        /// <summary>
+        /// 获取市场状态管理器（供MarketPriceUpdater使用）
+        /// </summary>
+        public MarketStateManager GetMarketStateManager()
+        {
+            return _marketStateManager;
         }
     }
 }

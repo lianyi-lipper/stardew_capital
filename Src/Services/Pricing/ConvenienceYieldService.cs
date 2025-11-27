@@ -61,14 +61,15 @@ namespace StardewCapital.Services.Pricing
             double bundleBonus = CheckCommunityBundleBonus(itemId);
             totalYield += bundleBonus;
 
-            if (birthdayBonus > 0 || bundleBonus > 0)
-            {
-                _monitor.Log(
-                    $"[ConvenienceYield] ItemID={itemId}: Base={baseYield:F4}, " +
-                    $"Birthday={birthdayBonus:F4}, Bundle={bundleBonus:F4}, Total={totalYield:F4}",
-                    LogLevel.Debug
-                );
-            }
+            // 调试日志（已注释，避免刷屏）
+            // if (birthdayBonus > 0 ||bundleBonus > 0)
+            // {
+            //     _monitor.Log(
+            //         $"[ConvenienceYield] ItemID={itemId}: Base={baseYield:F4}, " +
+            //         $"Birthday={birthdayBonus:F4}, Bundle={bundleBonus:F4}, Total={totalYield:F4}",
+            //         LogLevel.Debug
+            //     );
+            // }
 
             return totalYield;
         }

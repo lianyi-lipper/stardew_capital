@@ -1,15 +1,15 @@
 {
-    "//": "====================================================================",
-    "//": "市场规则配置文件 (Market Rules Configuration)",
-    "//": "用途：定义游戏经济系统的核心数学常数和规则",
-    "//": "注意：此文件包含核心数值策划参数，修改可能导致经济模型失衡",
-    "//": "====================================================================",
-    "//": "=== 宏观经济参数 (所有金融产品公用) ===",
+    "//_0": "====================================================================",
+    "//_1": "市场规则配置文件 (Market Rules Configuration)",
+    "//_2": "用途：定义游戏经济系统的核心数学常数和规则",
+    "//_3": "注意：此文件包含核心数值策划参数，修改可能导致经济模型失衡",
+    "//_4": "====================================================================",
+    "//_5": "=== 宏观经济参数 (所有金融产品公用) ===",
     "macro": {
         "riskFreeRate": 0.002,
         "_comment_riskFreeRate": "无风险利率（每日）| 默认: 0.002 (0.2%) | 含义: 资金的时间价值"
     },
-    "//": "=== 市场微观结构 (交易机制与冲击) ===",
+    "//_6": "=== 市场微观结构 (交易机制与冲击) ===",
     "marketMicrostructure": {
         "decayRate": 0.95,
         "_comment_decayRate": "冲击衰减率（每帧）| 范围: 0.8-0.99 | 默认: 0.95",
@@ -20,7 +20,6 @@
         "maxImpactClamp": 30.0,
         "_comment_maxImpactClamp": "冲击值上限（金币）| 默认: 30.0",
         "scenarios": {
-
             "deadMarket": {
                 "smartMoneyStrength": 0.8,
                 "trendFollowerStrength": 0.1,
@@ -51,7 +50,48 @@
             }
         }
     },
-    "//": "=== 熔断机制 (尾盘价格保护) ===",
+    "//_7": "=== 盘中新闻配置 ===",
+    "intradayNews": {
+        "enabled": true,
+        "_comment_enabled": "是否启用盘中突发新闻",
+        "intradayNewsProbability": 0.1,
+        "_comment_intradayNewsProbability": "盘中新闻每日发生概率 | 默认: 0.1 (10%)",
+        "triggerProbability": 0.001,
+        "_comment_triggerProbability": "盘中新闻触发概率（每次检查时）| 默认: 0.001",
+        "checkIntervalTicks": 300,
+        "_comment_checkIntervalTicks": "盘中新闻检查间隔（ticks）| 默认: 300",
+        "minNewsIntervalTicks": 1800,
+        "_comment_minNewsIntervalTicks": "最小新闻触发间隔（ticks）| 默认: 1800"
+    },
+    "//_8": "=== 虚拟流量配置 ===",
+    "virtualFlow": {
+        "liquidityCoefficient": 10.0,
+        "_comment_liquidityCoefficient": "流动性系数 | 默认: 10.0",
+        "maxFlowPerTick": 500,
+        "_comment_maxFlowPerTick": "每tick最大流量 | 默认: 500"
+    },
+    "//_9": "=== NPC代理配置 ===",
+    "npcAgents": {
+        "smartMoney": {
+            "baseStrength": 0.05,
+            "_comment_baseStrength": "基础强度 | 默认: 0.05",
+            "threshold": 0.5,
+            "_comment_threshold": "阈值 | 默认: 0.5",
+            "movingAveragePeriod": 20,
+            "_comment_movingAveragePeriod": "移动平均周期 | 默认: 20"
+        },
+        "trendFollowers": {
+            "baseStrength": 0.05,
+            "threshold": 0.5,
+            "movingAveragePeriod": 20
+        },
+        "fomoTraders": {
+            "baseStrength": 0.05,
+            "threshold": 0.5,
+            "movingAveragePeriod": 20
+        }
+    },
+    "//_10": "=== 熔断机制 (尾盘价格保护) ===",
     "circuitBreaker": {
         "enabled": true,
         "_comment_enabled": "是否启用熔断机制 | 默认: true",
@@ -60,7 +100,7 @@
         "maxMove": 15.0,
         "_comment_maxMove": "单日最大涨跌幅（金币）| 默认: 15.0"
     },
-    "//": "=== 衍生品配置 (按资产类别分类) ===",
+    "//_11": "=== 衍生品配置 (按资产类别分类) ===",
     "instruments": {
         "futures": {
             "storageCost": 0.005,
@@ -68,11 +108,11 @@
             "baseConvenienceYield": 0.001,
             "_comment_baseConvenienceYield": "基础便利收益率（每日）| 默认: 0.001 (0.1%) | 含义: 持有现货的基础好处"
         },
-        "//": "=== 未来预留：期权配置 ===",
+        "//_12": "=== 未来预留：期权配置 ===",
         "options": {
             "_comment": "Reserved for future use"
         },
-        "//": "=== 未来预留：股票/债券 ===",
+        "//_13": "=== 未来预留：股票/债券 ===",
         "stocks": {
             "_comment": "Reserved for future use"
         }

@@ -156,8 +156,8 @@ namespace StardewCapital.UI.Tabs
                     b.Draw(Game1.staminaRect, itemButton.bounds, Color.White * 0.1f);
                 }
 
-                // 计算涨跌数据
-                double price = futures.FuturesPrice;
+                // 计算涨跌数据（使用期货价格）
+                double price = futures.FuturesPrice;  // ✅ 修改：使用期货价格
                 double openPrice = futures.OpenPrice;
                 double change = price - openPrice;
                 double changePercent = openPrice > 0 ? (change / openPrice) * 100 : 0;
@@ -215,9 +215,9 @@ namespace StardewCapital.UI.Tabs
                 new Vector2(centerX - Game1.dialogueFont.MeasureString(title).X / 2, YPositionOnScreen + 30),
                 Color.Gold);
 
-            // 价格信息
-            double price = futures.FuturesPrice;
-            double openPrice = futures.OpenPrice;
+            // 价格信息（使用期货价格）
+            double price = futures.FuturesPrice;  // ✅ 修改：使用期货价格
+            double openPrice =futures.OpenPrice;
             double change = price - openPrice;
             double changePercent = openPrice > 0 ? (change / openPrice) * 100 : 0;
             Color changeColor = change >= 0 ? Color.LightGreen : Color.LightCoral;

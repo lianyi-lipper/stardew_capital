@@ -34,7 +34,7 @@ namespace StardewCapital.UI.Tabs
         private int _scrollAmount = 0;
         private int _maxScroll = 0;
         private int _contentHeight = 0;
-        private readonly int _visibleHeight = 300; // 减少为300，为顶部面板留空间
+        private readonly int _visibleHeight = 560; // Adjusted to utilize space from removed panel
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -98,12 +98,7 @@ namespace StardewCapital.UI.Tabs
         public override void Draw(SpriteBatch b)
         {
             int leftX = XPositionOnScreen + 60;
-            int topY = YPositionOnScreen + 280;
-            // ========== 绘制固定的市场情绪面板 ==========
-            DrawMarketSentimentPanel(b, leftX, topY - 100);
-    
-            // 为情绪面板腾出空间
-            topY += 80;
+            int topY = YPositionOnScreen + 200; // Adjusted starting position since panel is removed
 
             // 更新最大滚动值
             if (_contentHeight > _visibleHeight)
@@ -331,97 +326,6 @@ namespace StardewCapital.UI.Tabs
             };
             
             return (seasonIndex * 28) + dayOfMonth;
-        }
-        /// <summary>
-        /// 绘制市场情绪面板（固定在顶部）
-        /// </summary>
-        private void DrawMarketSentimentPanel(SpriteBatch b, int x, int y)
-        {
-            int panelWidth = 680;
-            int panelHeight = 80;
-    
-            // 绘制背景卡片
-            IClickableMenu.drawTextureBox(b, Game1.mouseCursors, 
-                new Rectangle(384, 373, 18, 18),
-                x - 10, y, panelWidth + 20, panelHeight, 
-                Color.White, 4f, false);
-    
-            // 半透明深色叠加层
-            b.Draw(Game1.staminaRect, 
-                new Rectangle(x - 5, y + 5, panelWidth + 10, panelHeight - 10), 
-                Color.Black * 0.15f);
-    
-            // 标题
-            Utility.drawTextWithShadow(b, "🎭 Market Sentiment", 
-                Game1.dialogueFont,
-                new Vector2(x, y + 8), 
-                Color.Gold);
-    
-            // 获取当前剧本和冲击值
-            var scenario = _scenarioManager.GetCurrentScenario();
-            var scenarioParams = _scenarioManager.GetCurrentParameters();
-    
-            // 获取示例商品的冲击值（防风草 itemId=24）
-            double impact = _impactService.GetCurrentImpact("24");
-    
-            // 剧本名称（左侧）
-            string scenarioName = GetScenarioChineseName(scenario);
-            Color scenarioColor = GetScenarioColor(scenario);
-    
-            string scenarioText = $"当前剧本: {scenarioName}";
-            Utility.drawTextWithShadow(b, scenarioText, 
-                Game1.smallFont,
-                new Vector2(x + 10, y + 35), 
-                scenarioColor);
-    
-            // 剧本描述（左侧第二行）
-            b.DrawString(Game1.tinyFont, scenarioParams.Description, 
-                new Vector2(x + 10, y + 58), 
-                Color.Gray);
-    
-            // 冲击值（右侧）
-            string impactText = impact >= 0 
-                ? $"Impact: +{impact:F2}g ↑" 
-                : $"Impact: {impact:F2}g ↓";
-    
-            Color impactColor = impact > 0 
-                ? Color.LimeGreen 
-                : (impact < 0 ? Color.OrangeRed : Color.Gray);
-    
-            Vector2 impactSize = Game1.dialogueFont.MeasureString(impactText);
-            Utility.drawTextWithShadow(b, impactText, 
-                Game1.dialogueFont,
-                new Vector2(x + panelWidth - impactSize.X - 10, y + 35), 
-                impactColor);
-        }
-        /// <summary>
-        /// 获取剧本中文名称
-        /// </summary>
-        private string GetScenarioChineseName(ScenarioType scenario)
-        {
-            return scenario switch
-            {
-                ScenarioType.DeadMarket => "死水一潭",
-                ScenarioType.IrrationalExuberance => "非理性繁荣",
-                ScenarioType.PanicSelling => "恐慌踩踏",
-                ScenarioType.ShortSqueeze => "轧空风暴",
-                _ => "未知"
-            };
-        }
-
-        /// <summary>
-        /// 获取剧本对应的颜色
-        /// </summary>
-        private Color GetScenarioColor(ScenarioType scenario)
-        {
-            return scenario switch
-            {
-                ScenarioType.DeadMarket => Color.SteelBlue,
-                ScenarioType.IrrationalExuberance => Color.OrangeRed,
-                ScenarioType.PanicSelling => Color.DarkRed,
-                ScenarioType.ShortSqueeze => Color.Purple,
-                _ => Color.White
-            };
         }
     }
 }
