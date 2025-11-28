@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>StardewCapital.Simulator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 通过链接方式引用主项目的核心代码文件 -->
+    
+    <!-- Core - 仅数学和时间接口 -->
+    <Compile Include="..\..\Src\Core\Math\*.cs" Link="Core\Math\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Src\Core\Time\IGameTimeProvider.cs" Link="Core\Time\IGameTimeProvider.cs" />
+    
+    <!-- Config - 所有配置类 -->
+    <Compile Include="..\..\Src\Config\*.cs" Link="Config\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Src\ModConfig.cs" Link="%(Filename)%(Extension)" />
+    
+    <!-- Domain - 所有领域模型 -->
+    <Compile Include="..\..\Src\Domain\**\*.cs" Link="Domain\%(RecursiveDir)%(Filename)%(Extension)" />
+    
+    <!-- Services - 仅包含纯逻辑部分 -->
+    <Compile Include="..\..\Src\Services\Pricing\Generators\FuturesShadowGenerator.cs" Link="Services\Pricing\Generators\FuturesShadowGenerator.cs" />
+    <Compile Include="..\..\Src\Services\Pricing\ShadowPriceGenerator.cs" Link="Services\Pricing\ShadowPriceGenerator.cs" />
+    
+    <!-- Data - 所有数据模型 -->
+    <Compile Include="..\..\Src\Data\**\*.cs" Link="Data\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- NuGet 包引用 -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 将配置文件复制到输出目录 -->
+    <None Include="..\..\Assets\**\*.json" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- SimulatorConfig.json -->
+    <None Include="SimulatorConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

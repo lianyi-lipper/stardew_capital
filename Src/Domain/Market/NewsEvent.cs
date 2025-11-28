@@ -6,6 +6,7 @@
 // ============================================================================
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace StardewCapital.Domain.Market
 {
@@ -46,18 +47,23 @@ namespace StardewCapital.Domain.Market
     public class NewsImpact
     {
         /// <summary>对需求的直接影响值</summary>
+        [JsonPropertyName("demand_impact")]
         public double DemandImpact { get; set; }
         
         /// <summary>对供给的直接影响值</summary>
+        [JsonPropertyName("supply_impact")]
         public double SupplyImpact { get; set; }
         
         /// <summary>价格乘数（直接乘以基础价格）</summary>
+        [JsonPropertyName("price_multiplier")]
         public double PriceMultiplier { get; set; } = 1.0;
         
         /// <summary>市场信心影响（影响价格波动率和交易活跃度）</summary>
+        [JsonPropertyName("confidence_impact")]
         public double ConfidenceImpact { get; set; } = 0.0;
         
         /// <summary>波动率影响（改变价格的日间波动幅度）</summary>
+        [JsonPropertyName("volatility_impact")]
         public double VolatilityImpact { get; set; } = 0.0;
     }
 
@@ -67,15 +73,19 @@ namespace StardewCapital.Domain.Market
     public class NewsScope
     {
         /// <summary>受影响的特定物品列表</summary>
+        [JsonPropertyName("affected_items")]
         public List<string> AffectedItems { get; set; } = new();
         
         /// <summary>受影响的物品类别</summary>
+        [JsonPropertyName("affected_categories")]
         public List<string> AffectedCategories { get; set; } = new();
         
         /// <summary>是否为全局影响</summary>
+        [JsonPropertyName("is_global")]
         public bool IsGlobal { get; set; } = false;
         
         /// <summary>受影响的地域范围</summary>
+        [JsonPropertyName("regions")]
         public List<string> Regions { get; set; } = new();
     }
 
@@ -85,9 +95,11 @@ namespace StardewCapital.Domain.Market
     public class NewsTiming
     {
         /// <summary>新闻公告日</summary>
+        [JsonPropertyName("announcement_day")]
         public int AnnouncementDay { get; set; }
         
         /// <summary>新闻有效期间 [开始日, 结束日]</summary>
+        [JsonPropertyName("effective_days")]
         public int[] EffectiveDays { get; set; } = new int[2];
         
         /// <summary>检查新闻在指定日期是否生效</summary>
@@ -103,12 +115,15 @@ namespace StardewCapital.Domain.Market
     public class NewsConditions
     {
         /// <summary>新闻发生概率 (0.0-1.0)</summary>
+        [JsonPropertyName("probability")]
         public double Probability { get; set; } = 1.0;
         
         /// <summary>前置条件列表</summary>
+        [JsonPropertyName("prerequisites")]
         public List<string> Prerequisites { get; set; } = new();
         
         /// <summary>影响值的随机范围 [最小值, 最大值]</summary>
+        [JsonPropertyName("random_range")]
         public double[] RandomRange { get; set; } = new double[] { 0, 0 };
     }
 

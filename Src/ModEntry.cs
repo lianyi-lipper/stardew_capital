@@ -82,7 +82,7 @@ namespace StardewCapital
             _scenarioManager.SetSwitchProbability(marketRules.MarketMicrostructure.ScenarioSwitchProbability);
             
             // 2. Initialize Market State Manager
-            var marketStateManager = new Services.Market.MarketStateManager(Monitor);
+            var marketStateManager = new Services.Market.MarketStateManager(Monitor, _config);
             
             // 2.5 Initialize Generators
             var futuresGenerator = new Services.Pricing.Generators.FuturesShadowGenerator(

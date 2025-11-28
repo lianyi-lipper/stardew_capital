@@ -174,10 +174,27 @@ namespace StardewCapital.Services.Pricing
                 return config.BasePrice * seasonalMultiplier * 0.1;
             }
 
+
             // 6. 应用公式：S_T = P_base × λ_s × (D / S)
             double fundamentalValue = config.BasePrice * seasonalMultiplier * (totalDemand / totalSupply);
 
-            // 7. 调试日志（已注释，避免刷屏）
+            // 7. 限制基本面价值的波动范围（防止极端价格）
+            double baselinePrice = config.BasePrice * seasonalMultiplier;
+            double maxPrice = baselinePrice * 3.0;  // 最多涨到3倍
+            double minPrice = baselinePrice * 0.3;  // 最多跌到30%
+            
+            if (fundamentalValue > maxPrice)
+            {
+                _monitor.Log($"[FundamentalEngine] {commodityName} fundamental value capped: {fundamentalValue:F2}g -> {maxPrice:F2}g", LogLevel.Debug);
+                fundamentalValue = maxPrice;
+            }
+            else if (fundamentalValue < minPrice)
+            {
+                _monitor.Log($"[FundamentalEngine] {commodityName} fundamental value floored: {fundamentalValue:F2}g -> {minPrice:F2}g", LogLevel.Debug);
+                fundamentalValue = minPrice;
+            }
+
+            // 8. 调试日志（已注释，避免刷屏）
             // _monitor.Log(
             //     $"[FundamentalEngine] {commodityName}: " +
             //     $"P_base={config.BasePrice:F2}g, λ_s={seasonalMultiplier:F2}, " +

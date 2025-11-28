@@ -37,6 +37,9 @@ namespace StardewCapital.Core.Math
             // sigma_t = sigma_base * sqrt(T - t)
             // 含义：波动率随时间衰减，接近到期日时波动变小
             double sigma_t = baseVolatility * System.Math.Sqrt(daysRemaining);
+            if (daysRemaining > 25) {
+                sigma_t *= 0.5;  // 前3天减半
+            }
 
             // 3. 生成随机扰动项 (epsilon ~ N(0,1))
             double epsilon = StatisticsUtils.NextGaussian();

@@ -231,8 +231,8 @@ namespace StardewCapital.Services.News
             // 克隆影响参数并应用随机范围
             instance.Impact = new NewsImpact
             {
-                DemandImpact = template.Impact.DemandImpact + GetRandomOffset(template.Conditions.RandomRange),
-                SupplyImpact = template.Impact.SupplyImpact + GetRandomOffset(template.Conditions.RandomRange),
+                DemandImpact = Math.Round(template.Impact.DemandImpact + GetRandomOffset(template.Conditions.RandomRange)),
+SupplyImpact = Math.Round(template.Impact.SupplyImpact + GetRandomOffset(template.Conditions.RandomRange)),
                 PriceMultiplier = template.Impact.PriceMultiplier,
                 ConfidenceImpact = template.Impact.ConfidenceImpact,
                 VolatilityImpact = template.Impact.VolatilityImpact

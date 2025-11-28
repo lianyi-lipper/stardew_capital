@@ -32,11 +32,15 @@ namespace StardewCapital.Services.Market
         private int _currentClosingTime;
         private PendingConfigChange _pendingConfig = new();
 
-        public MarketStateManager(IMonitor monitor)
+        public MarketStateManager(IMonitor monitor, ModConfig config)
         {
             _monitor = monitor;
             _generators = new Dictionary<string, IMarketDataGenerator>();
             _marketStates = new Dictionary<string, IMarketState>();
+            
+            // 初始化当前配置
+            _currentOpeningTime = config.OpeningTime;
+            _currentClosingTime = config.ClosingTime;
         }
 
         /// <summary>
@@ -252,7 +256,7 @@ namespace StardewCapital.Services.Market
         /// </summary>
         public MarketStateSaveData? GetSaveData()
         {
-            if (_currentSeason == null || _marketStates.Count == 0)
+            if (_marketStates.Count == 0)
                 return null;
                 
             return ExportSaveData();
