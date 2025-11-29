@@ -15,6 +15,7 @@ namespace StardewCapital.Services.Pricing
         private readonly StardewTimeProvider _timeProvider;
         private readonly News.NewsGenerator _newsGenerator;
         private readonly FundamentalEngine _fundamentalEngine;
+        private readonly Random _random = new Random();
 
         public ShadowPriceGenerator(
             ModConfig config, 
@@ -74,7 +75,8 @@ namespace StardewCapital.Services.Pricing
                     targetPrice,
                     timeRatio,
                     timeStep,
-                    intraVolatility
+                    intraVolatility,
+                    _random
                 );
 
                 // 确保价格非负
@@ -175,7 +177,8 @@ namespace StardewCapital.Services.Pricing
                     currentDailyPrice,
                     currentFundamentalValue, // 使用更新后的基本面
                     daysRemaining,
-                    baseVolatility
+                    baseVolatility,
+                    _random
                 );
 
                 // 2.4 生成日内轨迹 (Brownian Bridge)

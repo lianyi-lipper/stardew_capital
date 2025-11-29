@@ -17,51 +17,6 @@ using StardewCapital.Domain.Market;
 namespace StardewCapital.Services.News
 {
     /// <summary>
-    /// 新闻配置文件结构
-    /// </summary>
-    public class NewsConfigFile
-    {
-        [JsonPropertyName("news_items")]
-        public List<NewsTemplate> NewsTemplates { get; set; } = new();
-        
-        [JsonPropertyName("metadata")]
-        public Dictionary<string, string> Metadata { get; set; } = new();
-    }
-
-    /// <summary>
-    /// 新闻模板（从JSON加载）
-    ///</summary>
-    public class NewsTemplate
-    {
-        [JsonPropertyName("id")]
-        public string Id { get; set; } = string.Empty;
-        
-        [JsonPropertyName("title")]
-        public string Title { get; set; } = string.Empty;
-        
-        [JsonPropertyName("description")]
-        public string Description { get; set; } = string.Empty;
-        
-        [JsonPropertyName("severity")]
-        public string Severity { get; set; } = string.Empty;
-        
-        [JsonPropertyName("news_type")]
-        public string NewsTypeString { get; set; } = string.Empty;
-        
-        [JsonPropertyName("impact")]
-        public NewsImpact Impact { get; set; } = new();
-        
-        [JsonPropertyName("scope")]
-        public NewsScope Scope { get; set; } = new();
-        
-        [JsonPropertyName("timing")]
-        public NewsTiming Timing { get; set; } = new();
-        
-        [JsonPropertyName("conditions")]
-        public NewsConditions Conditions { get; set; } = new();
-    }
-
-    /// <summary>
     /// 新闻生成器
     /// 基于JSON配置随机生成新闻事件
     /// </summary>
@@ -76,6 +31,15 @@ namespace StardewCapital.Services.News
             _monitor = monitor;
             _random = new Random();
             LoadNewsConfigs(helper);
+        }
+
+        /// <summary>
+        /// 获取已加载的新闻模板列表
+        /// </summary>
+        /// <returns>新闻模板列表</returns>
+        public List<NewsTemplate> GetNewsTemplates()
+        {
+            return new List<NewsTemplate>(_newsTemplates);
         }
 
         /// <summary>

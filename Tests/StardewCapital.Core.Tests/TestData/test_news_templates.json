@@ -1,0 +1,77 @@
+{
+    "templates": [
+        {
+            "id": "test_good_news_1",
+            "title": "Good Weather Forecast",
+            "description": "Perfect weather expected this week",
+            "demand_impact": 5,
+            "supply_impact": 0,
+            "probability": 0.3,
+            "timing": {
+                "type": "daily_open",
+                "duration_days": 3
+            },
+            "triggers": {
+                "seasons": [
+                    "Spring",
+                    "Summer",
+                    "Fall",
+                    "Winter"
+                ],
+                "commodities": [
+                    "TestCommodity"
+                ],
+                "min_day": 1,
+                "max_day": 28
+            }
+        },
+        {
+            "id": "test_bad_news_1",
+            "title": "Unexpected Frost",
+            "description": "Late frost damages crops",
+            "demand_impact": 0,
+            "supply_impact": -8,
+            "probability": 0.2,
+            "timing": {
+                "type": "daily_open",
+                "duration_days": 2
+            },
+            "triggers": {
+                "seasons": [
+                    "Spring",
+                    "Fall"
+                ],
+                "commodities": [
+                    "TestCommodity"
+                ],
+                "min_day": 1,
+                "max_day": 28
+            }
+        },
+        {
+            "id": "test_intraday_news",
+            "title": "Market Volatility",
+            "description": "Sudden price movement during trading",
+            "demand_impact": 3,
+            "supply_impact": -2,
+            "probability": 0.15,
+            "timing": {
+                "type": "intraday",
+                "duration_steps": 30
+            },
+            "triggers": {
+                "seasons": [
+                    "Spring",
+                    "Summer",
+                    "Fall",
+                    "Winter"
+                ],
+                "commodities": [
+                    "TestCommodity"
+                ],
+                "min_day": 1,
+                "max_day": 28
+            }
+        }
+    ]
+}

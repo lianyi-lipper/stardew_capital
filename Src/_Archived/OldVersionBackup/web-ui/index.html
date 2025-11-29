@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星露谷资本 - 交易终端</title>
+    <style>
+        :root {
+            --bg-color: #2c3e50;
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --text-color: #ecf0f1;
+            --card-bg: #34495e;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .card h2 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            color: var(--primary-color);
+        }
+        .info-grid, .account-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .info-grid span:first-child, .account-grid span:first-child { font-weight: bold; }
+        #currentPrice { font-size: 1.5em; font-weight: bold; }
+        #marketStatus.Open { color: var(--success-color); }
+        #marketStatus.Closed, #marketStatus.Waiting { color: var(--danger-color); }
+
+        .actions-form { display: flex; flex-direction: column; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; }
+        .form-group input, .form-group select, .btn {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid var(--secondary-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 1em;
+        }
+        .btn {
+            background-color: var(--primary-color);
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s;
+        }
+        .btn:hover { background-color: var(--secondary-color); }
+        .btn-buy { background-color: var(--success-color); }
+        .btn-buy:hover { background-color: #27ae60; }
+        .btn-sell { background-color: var(--danger-color); }
+        .btn-sell:hover { background-color: #c0392b; }
+
+        #positionsCard { grid-column: 1 / -1; }
+        .positions-table { width: 100%; border-collapse: collapse; }
+        .positions-table th, .positions-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--secondary-color);
+        }
+        .positions-table th { background-color: var(--secondary-color); }
+        .profit { color: var(--success-color); }
+        .loss { color: var(--danger-color); }
+        .close-btn { background-color: var(--danger-color); padding: 5px 10px; }
+        .close-btn:hover { background-color: #c0392b; }
+    </style>
+</head>
+<body>
+    <h1>星露谷资本 - 交易终端</h1>
+    <div class="container">
+        <div class="card">
+            <h2>市场信息</h2>
+            <div class="info-grid">
+                <span>合约名称:</span> <span id="contractName">-</span>
+                <span>当前价格:</span> <span id="currentPrice">-</span>
+                <span>市场状态:</span> <span id="marketStatus">-</span>
+                <span></span><span></span>
+                <span>今日新闻:</span> <span id="dailyNews" style="grid-column: 1 / -1;">-</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>账户概览</h2>
+            <div class="account-grid">
+                <span>账户净值:</span> <span id="accountEquity">-</span>
+                <span>账户余额:</span> <span id="tradingAccountBalance">-</span>
+                <span>已用保证金:</span> <span id="usedMargin">-</span>
+                <span>可用保证金:</span> <span id="freeMargin">-</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>资金操作</h2>
+            <div class="actions-form">
+                <div class="form-group">
+                    <label for="fundAmount">金额:</label>
+                    <input type="number" id="fundAmount" placeholder="输入金额">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="depositBtn" class="btn" style="flex: 1;">存款</button>
+                    <button id="withdrawBtn" class="btn" style="flex: 1;">取款</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>交易操作</h2>
+            <div class="actions-form">
+                <div class="form-group">
+                    <label for="tradeAmount">数量:</label>
+                    <input type="number" id="tradeAmount" placeholder="输入合约数量">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="buyBtn" class="btn btn-buy" style="flex: 1;">做多 (买入)</button>
+                    <button id="sellBtn" class="btn btn-sell" style="flex: 1;">做空 (卖出)</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="positionsCard">
+            <h2>当前持仓</h2>
+            <table class="positions-table">
+                <thead>
+                    <tr>
+                        <th>方向</th>
+                        <th>数量</th>
+                        <th>开仓价格</th>
+                        <th>当前价格</th>
+                        <th>未实现盈亏</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="positionsTableBody">
+                    <!-- 持仓信息将由JS动态插入 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

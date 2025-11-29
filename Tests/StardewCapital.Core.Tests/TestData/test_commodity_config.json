@@ -1,0 +1,19 @@
+{
+    "name": "TestCommodity",
+    "base_price": 100,
+    "seasonal_multipliers": {
+        "Spring": 1.0,
+        "Summer": 1.1,
+        "Fall": 0.95,
+        "Winter": 0.9
+    },
+    "volatility": 0.15,
+    "intra_volatility": 0.08,
+    "mean_reversion_rate": 0.1,
+    "delivery_months": [
+        1,
+        4,
+        7,
+        10
+    ]
+}

@@ -2,48 +2,46 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>StardewCapital.Simulator</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- 通过链接方式引用主项目的核心代码文件 -->
-    
-    <!-- Core - 仅数学和时间接口 -->
+    <!-- Core层 - 只包含独立计算逻辑（排除依赖游戏的文件） -->
+    <Compile Include="..\..\Src\Core\Calculation\*.cs" Link="Core\Calculation\%(Filename)%(Extension)" />
     <Compile Include="..\..\Src\Core\Math\*.cs" Link="Core\Math\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Src\Core\Models\*.cs" Link="Core\Models\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Src\Core\Utils\*.cs" Link="Core\Utils\%(Filename)%(Extension)" />
+    <!-- Time目录只包含IGameTimeProvider接口，排除MixedTimeClock -->
     <Compile Include="..\..\Src\Core\Time\IGameTimeProvider.cs" Link="Core\Time\IGameTimeProvider.cs" />
     
-    <!-- Config - 所有配置类 -->
-    <Compile Include="..\..\Src\Config\*.cs" Link="Config\%(Filename)%(Extension)" />
-    <Compile Include="..\..\Src\ModConfig.cs" Link="%(Filename)%(Extension)" />
+    <!-- Config层 - 只包含独立配置类（排除PendingConfigChange） -->
+    <Compile Include="..\..\Src\Config\MarketRules.cs" Link="Config\MarketRules.cs" />
+
     
-    <!-- Domain - 所有领域模型 -->
-    <Compile Include="..\..\Src\Domain\**\*.cs" Link="Domain\%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- Data层 - 只包含SaveData子目录（排除SaveModel） -->
+    <Compile Include="..\..\Src\Data\SaveData\*.cs" Link="Data\SaveData\%(Filename)%(Extension)" />
     
-    <!-- Services - 仅包含纯逻辑部分 -->
-    <Compile Include="..\..\Src\Services\Pricing\Generators\FuturesShadowGenerator.cs" Link="Services\Pricing\Generators\FuturesShadowGenerator.cs" />
-    <Compile Include="..\..\Src\Services\Pricing\ShadowPriceGenerator.cs" Link="Services\Pricing\ShadowPriceGenerator.cs" />
+    <!-- Domain/Market - 所有市场相关类（包括子目录） -->
+    <Compile Include="..\..\Src\Domain\Market\*.cs" Link="Domain\Market\%(Filename)%(Extension)" />
+    <Compile Include="..\..\Src\Domain\Market\MarketState\*.cs" Link="Domain\Market\MarketState\%(Filename)%(Extension)" />
     
-    <!-- Data - 所有数据模型 -->
-    <Compile Include="..\..\Src\Data\**\*.cs" Link="Data\%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- Services/News - 只需NewsTemplate -->
+    <Compile Include="..\..\Src\Services\News\NewsTemplate.cs" Link="Services\News\NewsTemplate.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- NuGet 包引用 -->
+    <!-- NuGet包引用 -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- 将配置文件复制到输出目录 -->
+    <!-- 配置文件复制 -->
     <None Include="..\..\Assets\**\*.json" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- SimulatorConfig.json -->
     <None Include="SimulatorConfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

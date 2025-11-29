@@ -23,7 +23,7 @@ namespace StardewCapital.Core.Math
         /// <param name="daysRemaining">T - t：距离到期日的剩余天数</param>
         /// <param name="baseVolatility">sigma_base：基础波动率参数（通常取0.01-0.05）</param>
         /// <returns>S_{t+1}：下一个交易日的现货价格</returns>
-        public static double CalculateNextPrice(double currentPrice, double targetPrice, int daysRemaining, double baseVolatility)
+        public static double CalculateNextPrice(double currentPrice, double targetPrice, int daysRemaining, double baseVolatility, Random? random = null)
         {
             // 边界条件：到期日当天强制收敛到目标价格
             if (daysRemaining <= 0) return targetPrice;
@@ -42,7 +42,7 @@ namespace StardewCapital.Core.Math
             }
 
             // 3. 生成随机扰动项 (epsilon ~ N(0,1))
-            double epsilon = StatisticsUtils.NextGaussian();
+            double epsilon = StatisticsUtils.NextGaussian(random);
 
             // 4. 在对数空间应用 GBM 公式
             // ln(S_{t+1}) = ln(S_t) + alpha * (ln(Target) - ln(S_t)) + sigma_t * epsilon

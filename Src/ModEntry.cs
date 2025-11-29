@@ -87,10 +87,10 @@ namespace StardewCapital
             // 2.5 Initialize Generators
             var futuresGenerator = new Services.Pricing.Generators.FuturesShadowGenerator(
                 _config,
-                _timeProvider,
                 _newsGenerator,
                 _fundamentalEngine,
-                marketRules  // \u65b0\u589e\uff1a\u4f20\u5165MarketRules
+                marketRules,
+                Monitor
             );
             marketStateManager.RegisterGenerator("CommodityFutures", futuresGenerator);
             

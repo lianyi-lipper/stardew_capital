@@ -1,7 +1,10 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Collections.Generic;
 using StardewCapital.Config;
+using StardewCapital.Domain.Market;  // CommodityConfig在这里
+using StardewCapital.Services.News;  // NewsTemplate在这里
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -103,6 +106,16 @@ namespace StardewCapital.Simulator
             return LoadJsonConfig<MarketRules>(path) ?? new MarketRules();
         }
 
+        /// <summary>
+        /// 加载新闻模板配置
+        /// </summary>
+        public List<StardewCapital.Services.News.NewsTemplate> LoadNewsTemplates()
+        {
+            string path = Path.Combine(_baseDirectory, "Assets", "data", "news_config.json");
+            var wrapper = LoadJsonConfig<NewsConfigWrapper>(path);
+            return wrapper?.news ?? new List<StardewCapital.Services.News.NewsTemplate>();
+        }
+
         private T? LoadJsonConfig<T>(string filePath) where T : class
         {
             if (!File.Exists(filePath))
@@ -133,5 +146,11 @@ namespace StardewCapital.Simulator
     internal class CommoditiesWrapper
     {
         public List<CommodityConfig> commodities { get; set; } = new();
+    }
+
+    // 简单的包装类用于加载news_config.json
+    internal class NewsConfigWrapper
+    {
+        public List<StardewCapital.Services.News.NewsTemplate> news { get; set; } = new();
     }
 }

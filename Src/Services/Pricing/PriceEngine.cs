@@ -53,7 +53,8 @@ namespace StardewCapital.Services.Pricing
                 targetPrice, 
                 timeRatio,
                 timeStep,  // 动态时间步长
-                INTRA_VOLATILITY
+                INTRA_VOLATILITY,
+                _random
             );
 
             // Ensure price doesn't go negative
@@ -65,7 +66,8 @@ namespace StardewCapital.Services.Pricing
                 currentPrice, 
                 fundamentalValue, 
                 daysToMaturity, 
-                BASE_VOLATILITY
+                BASE_VOLATILITY,
+                _random
             );
         }
 

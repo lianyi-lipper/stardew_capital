@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using StardewCapital.Domain.Market;
+using StardewCapital.Config;
+using StardewCapital.Services.News;
 
 namespace StardewCapital.Simulator
 {
@@ -29,7 +31,7 @@ namespace StardewCapital.Simulator
                 var simulatorConfig = configLoader.LoadSimulatorConfig();
                 var commodityConfigs = configLoader.LoadCommoditiesConfig();
                 var marketRules = configLoader.LoadMarketRules();
-                string newsConfigPath = Path.Combine(baseDirectory, "Assets", "data", "news_config.json");
+                var newsTemplates = configLoader.LoadNewsTemplates();
 
                 if (commodityConfigs.Count == 0)
                 {
@@ -37,28 +39,18 @@ namespace StardewCapital.Simulator
                     return;
                 }
 
-                // 3. 创建时间提供器
-                Season season = ParseSeason(simulatorConfig.simulation.season);
-                var timeProvider = new MockTimeProvider(
-                    season,
-                    simulatorConfig.simulation.year,
-                    simulatorConfig.marketTiming.openingTime,
-                    simulatorConfig.marketTiming.closingTime
-                );
-
-                // 4. 创建模拟运行器
+                // 3. 创建模拟运行器
                 var runner = new SimulationRunner(
                     simulatorConfig,
                     commodityConfigs,
                     marketRules,
-                    newsConfigPath,
-                    timeProvider
+                    newsTemplates
                 );
 
-                // 5. 运行模拟
+                // 4. 运行模拟
                 var result = runner.RunSimulation();
 
-                // 6. 输出结果
+                // 5. 输出结果
                 string outputPath = Path.Combine(baseDirectory, simulatorConfig.simulation.outputPath);
                 OutputWriter.WriteJson(result, outputPath);
                 OutputWriter.PrintSummary(result);

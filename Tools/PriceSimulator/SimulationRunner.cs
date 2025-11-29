@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using StardewCapital.Config;
-using StardewCapital.Domain.Instruments;
+using StardewCapital.Core.Calculation;
+using StardewCapital.Core.Models;
+using StardewCapital.Core.Utils;
 using StardewCapital.Domain.Market;
 using StardewCapital.Domain.Market.MarketState;
 using StardewCapital.Data.SaveData;
-using StardewCapital.Simulator.Services;  // 使用模拟器版本的服务
-using StardewCapital.Services.Pricing.Generators;
+using StardewCapital.Services.News;
 
 namespace StardewCapital.Simulator
 {
     /// <summary>
-    /// 核心模拟运行器
+    /// 核心模拟运行器（重构版，使用独立计算器）
     /// 负责初始化服务并运行价格模拟
     /// </summary>
     public class SimulationRunner
@@ -21,21 +21,18 @@ namespace StardewCapital.Simulator
         private readonly SimulatorConfig _config;
         private readonly List<CommodityConfig> _commodityConfigs;
         private readonly MarketRules _marketRules;
-        private readonly string _newsConfigPath;  
-        private readonly MockTimeProvider _timeProvider;
+        private readonly List<NewsTemplate> _newsTemplates;
 
         public SimulationRunner(
             SimulatorConfig config,
             List<CommodityConfig> commodityConfigs,
             MarketRules marketRules,
-            string newsConfigPath,
-            MockTimeProvider timeProvider)
+            List<NewsTemplate> newsTemplates)
         {
             _config = config;
             _commodityConfigs = commodityConfigs;
             _marketRules = marketRules;
-            _newsConfigPath = newsConfigPath;
-            _timeProvider = timeProvider;
+            _newsTemplates = newsTemplates;
         }
 
         /// <summary>
@@ -57,48 +54,69 @@ namespace StardewCapital.Simulator
             Console.WriteLine($"季节: {season} (Year {year})");
             Console.WriteLine($"市场时间: {_config.marketTiming.openingTime} - {_config.marketTiming.closingTime}");
 
-            // 1. 初始化服务
-            var newsGenerator = new NewsGenerator(_newsConfigPath);
-            var fundamentalEngine = new FundamentalEngine(_commodityConfigs);
-            
-            var shadowGenerator = new FuturesShadowGenerator(
-                CreateModConfig(),
-                _timeProvider,
-                newsGenerator,
-                fundamentalEngine,
-                _marketRules
-            );
-
-            // 2. 获取商品配置
-            var commodityConfig = _commodityConfigs.FirstOrDefault(c => c.name == _config.simulation.commodity);
+            // 1. 获取商品配置
+            var commodityConfig = _commodityConfigs.FirstOrDefault(c => c.Name == _config.simulation.commodity);
             if (commodityConfig == null)
             {
                 throw new Exception($"未找到商品配置: {_config.simulation.commodity}");
             }
 
-            // 3. 创建期货对象
+            // 2. 计算初始价格
             double initialPrice = CalculateInitialPrice(commodityConfig, season);
-            var futures = new CommodityFutures(commodityConfig, season)
-            {
-                CurrentPrice = initialPrice,
-                FuturesPrice = initialPrice
-            };
-
             Console.WriteLine($"初始价格: {initialPrice:F2}g");
 
-            // 4. 生成市场状态
-            Console.WriteLine($"\n正在生成季度数据...");
-            var marketState = shadowGenerator.Generate(futures, season, year) as FuturesMarketState;
-
-            if (marketState == null)
+            // 3. 构建计算输入
+            var input = new PriceCalculationInput
             {
-                throw new Exception("生成市场状态失败");
-            }
+                CommodityName = _config.simulation.commodity,
+                CommodityConfig = commodityConfig,
+                StartPrice = initialPrice,
+                Season = season,
+                TotalDays = 28,
+                StepsPerDay = TimeUtils.CalculateStepsPerDay(
+                    _config.marketTiming.openingTime,
+                    _config.marketTiming.closingTime,
+                    10  // 每10分钟一个数据点
+                ),
+                OpeningTime = _config.marketTiming.openingTime,
+                ClosingTime = _config.marketTiming.closingTime,
+                NewsTemplates = _newsTemplates,
+                MarketRules = _marketRules,
+                BaseVolatility = 0.02,
+                IntraVolatility = 0.005,
+                RandomSeed = _config.simulation.randomSeed
+            };
+
+            // 4. 创建独立计算器并运行
+            Console.WriteLine($"\n正在生成季度数据...");
+            var calculator = new StandalonePriceCalculator(
+                log: (msg, level) => 
+                {
+                    if (_config.advanced.verboseOutput)
+                        Console.WriteLine($"[{level}] {msg}");
+                },
+                seed: _config.simulation.randomSeed
+            );
+
+            var output = calculator.Calculate(input);
 
             // 5. 输出统计信息
-            PrintStatistics(marketState);
+            PrintStatistics(output);
 
-            // 6. 构建存档数据（与游戏格式一致）
+            // 6. 转换为游戏存档格式
+            var marketState = new FuturesMarketState
+            {
+                Symbol = $"{_config.simulation.commodity}_F",
+                Season = season,
+                Year = year,
+                CommodityName = _config.simulation.commodity,
+                DeliveryDay = 28,
+                ShadowPrices = output.ShadowPrices,
+                FundamentalValues = output.FundamentalValues,
+                ScheduledNews = output.ScheduledNews,
+                StepsPerDay = output.StepsPerDay
+            };
+
             var saveData = new MarketStateSaveData
             {
                 CurrentSeason = season,
@@ -118,12 +136,12 @@ namespace StardewCapital.Simulator
         /// </summary>
         private double CalculateInitialPrice(CommodityConfig commodity, Season season)
         {
-            double basePrice = commodity.basePrice;
+            double basePrice = commodity.BasePrice;
             
             // 应用季节性乘数
-            if (commodity.growingSeason != season.ToString() && !commodity.isGreenhouseCrop)
+            if (commodity.GrowingSeason != season && !commodity.IsGreenhouseCrop)
             {
-                basePrice *= commodity.offSeasonMultiplier;
+                basePrice *= commodity.OffSeasonMultiplier;
             }
 
             return basePrice;
@@ -132,46 +150,39 @@ namespace StardewCapital.Simulator
         /// <summary>
         /// 打印统计信息
         /// </summary>
-        private void PrintStatistics(FuturesMarketState marketState)
+        private void PrintStatistics(PriceCalculationOutput output)
         {
             if (!_config.advanced.verboseOutput) return;
 
             Console.WriteLine($"\n========== 模拟统计 ==========");
-            Console.WriteLine($"总数据点数: {marketState.ShadowPrices.Length}");
-            Console.WriteLine($"每日数据点数: {marketState.StepsPerDay}");
-            Console.WriteLine($"总天数: {marketState.ShadowPrices.Length / marketState.StepsPerDay}");
+            Console.WriteLine($"总数据点数: {output.TotalDataPoints}");
+            Console.WriteLine($"每日数据点数: {output.StepsPerDay}");
+            Console.WriteLine($"总天数: {output.TotalDays}");
 
             // 价格统计
-            var prices = marketState.ShadowPrices;
-            double minPrice = prices.Min();
-            double maxPrice = prices.Max();
-            double avgPrice = prices.Average();
-            double startPrice = prices.First();
-            double endPrice = prices.Last();
-
             Console.WriteLine($"\n价格统计:");
-            Console.WriteLine($"  开始价格: {startPrice:F2}g");
-            Console.WriteLine($"  结束价格: {endPrice:F2}g");
-            Console.WriteLine($"  最低价格: {minPrice:F2}g");
-            Console.WriteLine($"  最高价格: {maxPrice:F2}g");
-            Console.WriteLine($"  平均价格: {avgPrice:F2}g");
-            Console.WriteLine($"  总涨跌幅: {(endPrice - startPrice):F2}g ({(endPrice / startPrice - 1) * 100:F2}%)");
+            Console.WriteLine($"  开始价格: {output.OpeningPrice:F2}g");
+            Console.WriteLine($"  结束价格: {output.ClosingPrice:F2}g");
+            Console.WriteLine($"  最低价格: {output.MinPrice:F2}g");
+            Console.WriteLine($"  最高价格: {output.MaxPrice:F2}g");
+            Console.WriteLine($"  平均价格: {output.AvgPrice:F2}g");
+            Console.WriteLine($"  总涨跌幅: {output.TotalChange:F2}g ({output.TotalChangePercent:F2}%)");
 
             // 新闻统计
             Console.WriteLine($"\n新闻事件:");
-            Console.WriteLine($"  总事件数: {marketState.ScheduledNews.Count}");
+            Console.WriteLine($"  总事件数: {output.ScheduledNews.Count}");
             
-            var dailyNews = marketState.ScheduledNews.Where(n => n.TriggerTimeRatio == null).Count();
-            var intradayNews = marketState.ScheduledNews.Where(n => n.TriggerTimeRatio != null).Count();
+            var dailyNews = output.ScheduledNews.Where(n => n.TriggerTimeRatio == null).Count();
+            var intradayNews = output.ScheduledNews.Where(n => n.TriggerTimeRatio != null).Count();
             
             Console.WriteLine($"  盘后新闻: {dailyNews}");
             Console.WriteLine($"  盘中新闻: {intradayNews}");
 
             // 基本面统计
-            if (marketState.FundamentalValues != null && marketState.FundamentalValues.Length > 0)
+            if (output.FundamentalValues != null && output.FundamentalValues.Length > 0)
             {
-                double startFundamental = marketState.FundamentalValues.First();
-                double endFundamental = marketState.FundamentalValues.Last();
+                double startFundamental = output.FundamentalValues.First();
+                double endFundamental = output.FundamentalValues.Last();
                 
                 Console.WriteLine($"\n基本面价值:");
                 Console.WriteLine($"  初始值: {startFundamental:F2}g");
@@ -189,15 +200,6 @@ namespace StardewCapital.Simulator
                 "fall" => Season.Fall,
                 "winter" => Season.Winter,
                 _ => throw new ArgumentException($"未知的季节: {seasonStr}")
-            };
-        }
-
-        private ModConfig CreateModConfig()
-        {
-            return new ModConfig
-            {
-                OpeningTime = _config.marketTiming.openingTime,
-                ClosingTime = _config.marketTiming.closingTime
             };
         }
     }

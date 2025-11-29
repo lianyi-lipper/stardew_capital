@@ -180,7 +180,7 @@ harmony.Patch(
 
 - **Harmony 文档**：https://harmony.pardeike.net/
 - **SMAPI 文档**：https://stardewvalleywiki.com/Modding:Modder_Guide
-- **旧版本实现**：`stardew_capital_old/TimePatch.cs`
+- **旧版本实现**：`Src/_Archived/OldVersionBackup/TimePatch.cs`
 
 ## 变更历史
 
