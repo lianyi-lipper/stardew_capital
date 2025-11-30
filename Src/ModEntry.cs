@@ -97,6 +97,10 @@ namespace StardewCapital
             // 3. Initialize Market Services
             var marketTimeCalculator = new Services.Market.MarketTimeCalculator();
             
+            // 3.5 Initialize NPC Agent Manager
+            var npcAgentManager = new Services.Market.NPCAgentManager(Monitor, marketRules);
+            Monitor.Log("[NPCAgentManager] Initialized successfully", LogLevel.Info);
+            
             // 4. Initialize Market Manager (with new architecture)
             var orderBookManager = new OrderBookManager(Monitor, _impactService, null!); // MarketManager set later
             var priceUpdater = new MarketPriceUpdater(
@@ -105,7 +109,8 @@ namespace StardewCapital
                 _impactService, _scenarioManager, _config, 
                 null!, // MarketManager (arg 10)
                 orderBookManager, // OrderBookManager (arg 11)
-                marketRules); // MarketRules (arg 12)
+                marketRules, // MarketRules (arg 12)
+                npcAgentManager); // NPCAgentManager (arg 13)
             
             var dailyMarketOpener = new Services.Market.DailyMarketOpener(
                 Monitor,
@@ -115,7 +120,8 @@ namespace StardewCapital
                 marketStateManager,
                 marketRules,
                 _priceEngine,              // 新增：基差计算
-                _convenienceYieldService   // 新增：便利收益计算
+                _convenienceYieldService,   // 新增：便利收益计算
+                npcAgentManager            // 新增：NPC代理管理
             );
             
             var newsSchedulePlayer = new Services.Market.NewsSchedulePlayer(

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时市场监控 | Stardew Capital</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --border: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f36 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .time-info {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--success);
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-left: 10px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .symbol {
+            font-family: 'Courier New', monospace;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .price-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .price-item {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .price-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .price-item.shadow {
+            border-left-color: #8b5cf6;
+        }
+
+        .price-item.current {
+            border-left-color: #3b82f6;
+        }
+
+        .price-item.futures {
+            border-left-color: #10b981;
+        }
+
+        .price-label {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .price-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .npc-forces {
+            margin: 15px 0;
+        }
+
+        .force-bar {
+            margin: 10px 0;
+        }
+
+        .force-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .force-value {
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .progress-bg {
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease, background 0.3s;
+            border-radius: 10px;
+        }
+
+        .smart-money {
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+        }
+
+        .trend-follower {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+
+        .fomo {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .base-flow {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+
+        .total-flow {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+
+        .impact-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+        }
+
+        .impact-value {
+            font-size: 2em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .impact-positive {
+            color: var(--success);
+        }
+
+        .impact-negative {
+            color: var(--danger);
+        }
+
+        .impact-neutral {
+            color: var(--text-secondary);
+        }
+
+        .mini-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 40px;
+            margin-top: 10px;
+        }
+
+        .bar {
+            flex: 1;
+            background: var(--accent);
+            margin: 0 1px;
+            border-radius: 2px 2px 0 0;
+            transition: height 0.3s;
+            opacity: 0.7;
+        }
+
+        .bar:hover {
+            opacity: 1;
+        }
+
+        .orderbook-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .ob-item {
+            background: var(--bg-dark);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .ob-label {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .ob-value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .error-msg {
+            background: var(--danger);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: var(--text-secondary);
+        }
+
+        .refresh-info {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: slideIn 0.5s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>🎮 Stardew Capital 实时监控</h1>
+        <div class="time-info">
+            <span id="timestamp">--</span>
+            <span class="status">● 实时连接</span>
+        </div>
+        <div class="time-info">
+            游戏时间: <strong id="gameTime">Spring 1</strong>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="loading" class="loading">
+            ⏳ 正在加载市场数据...
+        </div>
+        <div id="error" class="error-msg" style="display: none;"></div>
+        <div id="markets" class="grid"></div>
+        <div class="refresh-info">
+            🔄 每秒自动刷新数据 | API: <code>http://localhost:5000/api/debug/realtime</code>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/debug/realtime';
+        const REFRESH_INTERVAL = 1000; // 1秒刷新一次
+
+        async function fetchMarketData() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                updateUI(data);
+                hideError();
+            } catch (error) {
+                showError(`连接失败: ${error.message}. 请确保游戏正在运行且WebServer已启动。`);
+            }
+        }
+
+        function updateUI(data) {
+            // 更新时间信息
+            document.getElementById('timestamp').textContent = data.timestamp;
+            document.getElementById('gameTime').textContent = `${data.gameSeason} ${data.gameDay}`;
+
+            // 更新市场卡片
+            const container = document.getElementById('markets');
+            const loading = document.getElementById('loading');
+            loading.style.display = 'none';
+
+            container.innerHTML = data.markets.map(market => createMarketCard(market)).join('');
+        }
+
+        function createMarketCard(market) {
+            const impactClass = market.currentImpact > 0 ? 'impact-positive' :
+                market.currentImpact < 0 ? 'impact-negative' : 'impact-neutral';
+            const impactSign = market.currentImpact > 0 ? '+' : '';
+
+            // 计算NPC力量的百分比 (假设最大值为1000)
+            const maxForce = 1000;
+            const smartPct = Math.min(100, Math.abs(market.npcForces.smartMoney / maxForce * 100));
+            const trendPct = Math.min(100, Math.abs(market.npcForces.trendFollower / maxForce * 100));
+            const fomoPct = Math.min(100, Math.abs(market.npcForces.fomo / maxForce * 100));
+            const basePct = Math.min(100, Math.abs(market.npcForces.baseFlow / maxForce * 100));
+            const totalPct = Math.min(100, Math.abs(market.npcForces.totalFlow / maxForce * 100));
+
+            // 生成冲击值历史迷你图
+            const impactBars = market.impactHistory.map((val, idx) => {
+                const absVal = Math.abs(val);
+                const maxImpact = Math.max(...market.impactHistory.map(v => Math.abs(v)), 0.1);
+                const heightPct = (absVal / maxImpact * 100);
+                const color = val > 0 ? '#10b981' : val < 0 ? '#ef4444' : '#64748b';
+                return `<div class="bar" style="height: ${heightPct}%; background: ${color};" title="${val.toFixed(2)}g"></div>`;
+            }).join('');
+
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">${market.name}</span>
+                        <span class="symbol">${market.symbol}</span>
+                    </div>
+                    
+                    <div class="price-section">
+                        <div class="price-item shadow">
+                            <div class="price-label">影子价格</div>
+                            <div class="price-value">${market.shadowPrice.toFixed(2)}g</div>
+                        </div>
+                        <div class="price-item current">
+                            <div class="price-label">现货价格</div>
+                            <div class="price-value">${market.currentPrice.toFixed(2)}g</div>
+                        </div>
+                        <div class="price-item futures">
+                            <div class="price-label">期货价格</div>
+                            <div class="price-value">${market.futuresPrice.toFixed(2)}g</div>
+                        </div>
+                    </div>
+                    
+                    <div class="npc-forces">
+                        <h3 style="margin-bottom: 10px; font-size: 1.1em; color: var(--text-secondary);">🤖 NPC代理力量</h3>
+                        
+                        <div class="force-bar">
+                            <div class="force-label">
+                                <span>🧠 聪明钱 Smart Money</span>
+                                <span class="force-value">${market.npcForces.smartMoney.toFixed(1)}</span>
+                            </div>
+                            <div class="progress-bg">
+                                <div class="progress-fill smart-money" style="width: ${smartPct}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="force-bar">
+                            <div class="force-label">
+                                <span>📈 趋势派 Trend Followers</span>
+                                <span class="force-value">${market.npcForces.trendFollower.toFixed(1)}</span>
+                            </div>
+                            <div class="progress-bg">
+                                <div class="progress-fill trend-follower" style="width: ${trendPct}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="force-bar">
+                            <div class="force-label">
+                                <span>😱 FOMO韭菜 FOMO Traders</span>
+                                <span class="force-value">${market.npcForces.fomo.toFixed(1)}</span>
+                            </div>
+                            <div class="progress-bg">
+                                <div class="progress-fill fomo" style="width: ${fomoPct}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="force-bar">
+                            <div class="force-label">
+                                <span>🌊 基础流量 Base Flow</span>
+                                <span class="force-value">${market.npcForces.baseFlow.toFixed(1)}</span>
+                            </div>
+                            <div class="progress-bg">
+                                <div class="progress-fill base-flow" style="width: ${basePct}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="force-bar">
+                            <div class="force-label">
+                                <span>💥 总流量 Total Flow</span>
+                                <span class="force-value">${market.npcForces.totalFlow.toFixed(1)}</span>
+                            </div>
+                            <div class="progress-bg">
+                                <div class="progress-fill total-flow" style="width: ${totalPct}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="impact-section">
+                        <h3 style="margin-bottom: 10px; font-size: 1.1em; color: var(--text-secondary);">⚡ 市场冲击值</h3>
+                        <div class="impact-value ${impactClass}">
+                            ${impactSign}${market.currentImpact.toFixed(3)}g
+                        </div>
+                        <div class="mini-chart">
+                            ${impactBars}
+                        </div>
+                    </div>
+                    
+                    ${market.orderBook ? `
+                    <div class="orderbook-info">
+                        <div class="ob-item">
+                            <div class="ob-label">盘口中间价</div>
+                            <div class="ob-value">${market.orderBook.midPrice.toFixed(2)}g</div>
+                        </div>
+                        <div class="ob-item">
+                            <div class="ob-label">卖盘深度</div>
+                            <div class="ob-value">${market.orderBook.askDepth}</div>
+                        </div>
+                        <div class="ob-item">
+                            <div class="ob-label">买盘深度</div>
+                            <div class="ob-value">${market.orderBook.bidDepth}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // 初始加载
+        fetchMarketData();
+
+        // 定时刷新
+        setInterval(fetchMarketData, REFRESH_INTERVAL);
+    </script>
+</body>
+
+</html>

@@ -271,5 +271,13 @@ namespace StardewCapital.Services.Market
         {
             return _marketStateManager;
         }
+        
+        /// <summary>
+        /// 获取NPC代理力量数据（供WebServer使用）
+        /// </summary>
+        public Dictionary<string, AgentForces> GetNPCForces()
+        {
+            return _dailyMarketOpener.GetNPCForces();
+        }
     }
 }

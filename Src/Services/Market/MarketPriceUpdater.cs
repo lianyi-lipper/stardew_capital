@@ -200,6 +200,18 @@ namespace StardewCapital.Services.Market
                             double impact = _impactService.GetCurrentImpact(futures.UnderlyingItemId);
                             instrument.CurrentPrice += impact;
                             
+                            
+                            // 2.3 计算NPC代理力量（供监控面板显示和订单簿流量计算）
+                            double shadowPrice = CurrentShadowPrice.GetValueOrDefault(futures.Symbol, futures.CurrentPrice);
+                            
+                            _npcAgentManager.CalculateNetVirtualFlow(
+                                symbol: futures.Symbol,
+                                currentPrice: instrument.CurrentPrice,
+                                shadowPrice: shadowPrice,
+                                fundamentalValue: fundamentalValue,
+                                scenario: scenarioParams
+                            );
+                            
                             // 2.5 计算期货价格（基差系统）
                             int daysToMaturity = _timeCalculator.CalculateDaysToMaturity(futures);
                             

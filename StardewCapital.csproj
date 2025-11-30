@@ -24,4 +24,16 @@
     <None Remove="Tools\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Tests\**" />
+    <EmbeddedResource Remove="Tests\**" />
+    <None Remove="Tests\**" /> 
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Src\_Archived\**" />
+    <EmbeddedResource Remove="Src\_Archived\**" />
+    <None Remove="Src\_Archived\**" /> 
+  </ItemGroup>
+
 </Project>

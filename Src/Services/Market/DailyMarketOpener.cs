@@ -24,6 +24,7 @@ namespace StardewCapital.Services.Market
         private readonly PriceEngine _priceEngine;
         private readonly ConvenienceYieldService _convenienceYieldService;
         private readonly MarketTimeCalculator _timeCalculator;
+        private readonly NPCAgentManager _npcAgentManager;
 
         public DailyMarketOpener(
             IMonitor monitor,
@@ -33,7 +34,8 @@ namespace StardewCapital.Services.Market
             MarketStateManager marketStateManager,
             MarketRules rules,
             PriceEngine priceEngine,
-            ConvenienceYieldService convenienceYieldService)
+            ConvenienceYieldService convenienceYieldService,
+            NPCAgentManager npcAgentManager)
         {
             _monitor = monitor;
             _scenarioManager = scenarioManager;
@@ -43,7 +45,16 @@ namespace StardewCapital.Services.Market
             _rules = rules;
             _priceEngine = priceEngine;
             _convenienceYieldService = convenienceYieldService;
+            _npcAgentManager = npcAgentManager;
             _timeCalculator = new MarketTimeCalculator();
+        }
+        
+        /// <summary>
+        /// 获取NPC代理力量数据（供MarketManager公开给WebServer）
+        /// </summary>
+        public Dictionary<string, AgentForces> GetNPCForces()
+        {
+            return _npcAgentManager.LastForces;
         }
 
         /// <summary>

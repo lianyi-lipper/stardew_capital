@@ -462,6 +462,120 @@ namespace StardewCapital.Services.Infrastructure
                     jsonResponse = $"{{\"success\":false,\"error\":\"{ex.Message}\"}}";
                 }
             }
+            // GET /api/debug/realtime - 获取实时监控数据
+            else if (path == "/api/debug/realtime")
+            {
+                var instruments = _marketManager.GetInstruments();
+                var sb = new StringBuilder();
+                sb.Append("{");
+                
+                // 时间信息
+                sb.Append($"\"timestamp\":\"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\",");
+                sb.Append($"\"gameDay\":{Game1.dayOfMonth},");
+                sb.Append($"\"gameSeason\":\"{Game1.currentSeason}\",");
+                
+                // 市场数据
+                sb.Append("\"markets\":[");
+                for (int i = 0; i < instruments.Count; i++)
+                {
+                    var inst = instruments[i];
+                    if (inst is not CommodityFutures futures) continue;
+                    
+                    sb.Append("{");
+                    sb.Append($"\"symbol\":\"{futures.Symbol}\",");
+                    sb.Append($"\"name\":\"{futures.Name}\",");
+                    
+                    // 价格数据
+                    sb.Append($"\"currentPrice\":{futures.CurrentPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                    sb.Append($"\"futuresPrice\":{futures.FuturesPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                    sb.Append($"\"basis\":{(futures.FuturesPrice - futures.CurrentPrice).ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                    
+                    // 影子价格 (从MarketPriceUpdater获取)
+                    var shadowPrices = _marketManager.GetType().GetField("_priceUpdater", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                        ?.GetValue(_marketManager);
+                    
+                    if (shadowPrices != null)
+                    {
+                        var currentShadowPriceDict = shadowPrices.GetType().GetProperty("CurrentShadowPrice")
+                            ?.GetValue(shadowPrices) as Dictionary<string, double>;
+                        
+                        if (currentShadowPriceDict != null && currentShadowPriceDict.TryGetValue(futures.Symbol, out double shadowPrice))
+                        {
+                            sb.Append($"\"shadowPrice\":{shadowPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                        }
+                        else
+                        {
+                            sb.Append($"\"shadowPrice\":{futures.CurrentPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                        }
+                    }
+                    
+                    // 冲击值历史 (最近10个)
+                    var impactHistory = _marketManager.GetImpactHistory(futures.UnderlyingItemId);
+                    sb.Append("\"impactHistory\":[");
+                    int impactCount = Math.Min(10, impactHistory.Count);
+                    for (int j = Math.Max(0, impactHistory.Count - impactCount); j < impactHistory.Count; j++)
+                    {
+                        sb.Append(impactHistory[j].ToString(System.Globalization.CultureInfo.InvariantCulture));
+                        if (j < impactHistory.Count - 1) sb.Append(",");
+                    }
+                    sb.Append("],");
+                    
+                    // 当前冲击值 (最后一个)
+                    double currentImpact = impactHistory.Count > 0 ? impactHistory[impactHistory.Count - 1] : 0;
+                    sb.Append($"\"currentImpact\":{currentImpact.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                    
+                    // NPC代理力量 (从MarketManager获取真实数据)
+                    var npcForces = _marketManager.GetNPCForces();
+                    sb.Append("\"npcForces\":{");
+                    
+                    if (npcForces.TryGetValue(futures.Symbol, out var forces))
+                    {
+                        sb.Append($"\"smartMoney\":{forces.SmartMoneyFlow.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                        sb.Append($"\"trendFollower\":{forces.TrendFlow.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                        sb.Append($"\"fomo\":{forces.FomoFlow.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                        sb.Append($"\"baseFlow\":{forces.BaseFlow.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                        sb.Append($"\"totalFlow\":{forces.TotalFlow.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+                    }
+                    else
+                    {
+                        // 如果没有NPC数据，返回0
+                        sb.Append("\"smartMoney\":0,");
+                        sb.Append("\"trendFollower\":0,");
+                        sb.Append("\"fomo\":0,");
+                        sb.Append("\"baseFlow\":0,");
+                        sb.Append("\"totalFlow\":0");
+                    }
+                    
+                    sb.Append("},");
+                    
+                    // 订单簿信息
+                    var orderBook = _marketManager.GetOrderBook(futures.Symbol);
+                    if (orderBook != null)
+                    {
+                        var midPrice = orderBook.GetMidPrice();
+                        var askCount = orderBook.Asks.Count();
+                        var bidCount = orderBook.Bids.Count();
+                        
+                        sb.Append($"\"orderBook\":{{");
+                        sb.Append($"\"midPrice\":{midPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)},");
+                        sb.Append($"\"askDepth\":{askCount},");
+                        sb.Append($"\"bidDepth\":{bidCount}");
+                        sb.Append("}");
+                    }
+                    else
+                    {
+                        sb.Append("\"orderBook\":null");
+                    }
+                    
+                    sb.Append("}");
+                    if (i < instruments.Count - 1) sb.Append(",");
+                }
+                sb.Append("]");
+                
+                sb.Append("}");
+                jsonResponse = sb.ToString();
+            }
 
             // 发送JSON响应
             byte[] buffer = Encoding.UTF8.GetBytes(jsonResponse);

@@ -15,15 +15,18 @@ namespace StardewCapital.Services.Market
         private readonly IMonitor _monitor;
         private readonly MarketManager _marketManager;
         private readonly OrderBookManager _orderBookManager;
+        private readonly NPCAgentManager _npcAgentManager;
 
         public VirtualFlowProcessor(
             IMonitor monitor,
             MarketManager marketManager,
-            OrderBookManager orderBookManager)
+            OrderBookManager orderBookManager,
+            NPCAgentManager npcAgentManager)
         {
             _monitor = monitor;
             _marketManager = marketManager;
             _orderBookManager = orderBookManager;
+            _npcAgentManager = npcAgentManager;
         }
 
         /// <summary>
@@ -83,9 +86,37 @@ namespace StardewCapital.Services.Market
                 if (Math.Abs(priceDiff) < 0.1m)
                     continue;
                 
-                // 4. 计算虚拟流量数量（价差越大，流量越大）
-                bool isBuyPressure = priceDiff > 0; // 目标价 > 中间价，需要买压推高价格
-                int flowQuantity = CalculateFlowQuantity(priceDiff);
+                // 4. 从NPCAgentManager获取虚拟流量（使用真实NPC计算）
+                int flowQuantity = 0;
+                bool isBuyPressure = priceDiff > 0; // 默认值：价差方向
+                
+                var npcForces = _npcAgentManager.LastForces;
+                if (npcForces.TryGetValue(futures.Symbol, out var forces))
+                {
+                    // 使用NPC计算的总流量
+                    flowQuantity = Math.Abs((int)forces.TotalFlow);
+                    isBuyPressure = forces.TotalFlow > 0; // 正流量=买压，负流量=卖压
+                    
+                    _monitor?.Log(
+                        $"[VirtualFlow] {futures.Symbol}: Using NPC forces - " +
+                        $"Total={forces.TotalFlow:F1}, Smart={forces.SmartMoneyFlow:F1}, " +
+                        $"Trend={forces.TrendFlow:F1}, FOMO={forces.FomoFlow:F1}",
+                        LogLevel.Trace
+                    );
+                }
+                else
+                {
+                    // 降级：如果没有NPC数据，使用简化计算
+                    flowQuantity = CalculateFlowQuantity(priceDiff);
+                    _monitor?.Log(
+                        $"[VirtualFlow] {futures.Symbol}: No NPC data, using fallback calculation",
+                        LogLevel.Debug
+                    );
+                }
+                
+                // 跳过极小的流量
+                if (flowQuantity < 5)
+                    continue;
                 
                 // 5. 虚拟流量撞击订单簿
                 var (vwap, slippage) = orderBook.ExecuteMarketOrder(isBuyPressure, flowQuantity);
@@ -102,7 +133,7 @@ namespace StardewCapital.Services.Market
         }
 
         /// <summary>
-        /// 计算虚拟流量数量
+        /// 计算虚拟流量数量 (降级方法，当NPC数据不可用时使用)
         /// </summary>
         private int CalculateFlowQuantity(decimal priceDiff)
         {
