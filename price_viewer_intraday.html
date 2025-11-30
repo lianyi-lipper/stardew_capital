@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stardew Capital - Price Viewer (含日内走势)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input[type="file"]:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        select {
+            padding: 12px 20px;
+            border: 2px solid #cbd5e0;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            min-width: 200px;
+            transition: all 0.3s;
+        }
+
+        select:hover {
+            border-color: #667eea;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .intraday-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .intraday-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .intraday-controls label {
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .news-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .news-section h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .news-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .news-item.positive {
+            border-left-color: #48bb78;
+        }
+
+        .news-item.negative {
+            border-left-color: #f56565;
+        }
+
+        .news-title {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .news-impact {
+            font-size: 0.9em;
+            color: #718096;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📈 Stardew Capital Price Viewer</h1>
+        <p class="subtitle">可视化期货价格走势和新闻事件 (含日内价格走势)</p>
+
+        <div class="controls">
+            <div class="file-input-wrapper">
+                <input type="file" id="fileInput" accept=".json">
+            </div>
+            <select id="contractSelect" disabled>
+                <option value="">选择期货合约...</option>
+            </select>
+        </div>
+
+        <div id="errorMessage"></div>
+        <div id="infoSection"></div>
+
+        <!-- 日收盘价图表 -->
+        <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+        </div>
+
+        <!-- 日内价格走势图表 -->
+        <div class="intraday-section" id="intradaySection" style="display: none;">
+            <div class="intraday-controls">
+                <label for="daySelect">📊 选择日期查看日内价格走势：</label>
+                <select id="daySelect">
+                    <option value="">请先选择期货合约</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas id="intradayChart"></canvas>
+            </div>
+        </div>
+
+        <div class="news-section" id="newsSection"></div>
+    </div>
+
+    <script>
+        let marketData = null;
+        let chart = null;
+        let intradayChart = null;
+        let currentFutures = null;
+
+        const fileInput = document.getElementById('fileInput');
+        const contractSelect = document.getElementById('contractSelect');
+        const errorMessage = document.getElementById('errorMessage');
+        const infoSection = document.getElementById('infoSection');
+        const newsSection = document.getElementById('newsSection');
+        const daySelect = document.getElementById('daySelect');
+        const intradaySection = document.getElementById('intradaySection');
+
+        fileInput.addEventListener('change', handleFileSelect);
+        contractSelect.addEventListener('change', handleContractSelect);
+        daySelect.addEventListener('change', handleDaySelect);
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    marketData = JSON.parse(e.target.result);
+                    loadContracts();
+                    errorMessage.innerHTML = '';
+                } catch (error) {
+                    showError('JSON 解析失败: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function loadContracts() {
+            contractSelect.innerHTML = '<option value="">选择期货合约...</option>';
+
+            if (marketData.FuturesStates && marketData.FuturesStates.length > 0) {
+                marketData.FuturesStates.forEach((futures, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${futures.CommodityName} (${futures.Symbol})`;
+                    contractSelect.appendChild(option);
+                });
+                contractSelect.disabled = false;
+            }
+        }
+
+        function handleContractSelect() {
+            const selectedIndex = contractSelect.value;
+            if (selectedIndex === '') return;
+
+            currentFutures = marketData.FuturesStates[selectedIndex];
+            displayMarketInfo(currentFutures);
+            displayChart(currentFutures);
+            displayNews(currentFutures);
+            initializeDaySelect(currentFutures);
+        }
+
+        function displayMarketInfo(futures) {
+            const stepsPerDay = futures.StepsPerDay || 0;
+            const totalDays = Math.floor(futures.ShadowPrices.length / stepsPerDay);
+            const avgPrice = futures.ShadowPrices.reduce((a, b) => a + b, 0) / futures.ShadowPrices.length;
+            const maxPrice = Math.max(...futures.ShadowPrices);
+            const minPrice = Math.min(...futures.ShadowPrices);
+
+            infoSection.innerHTML = `
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-label">商品名称</div>
+                        <div class="info-value">${futures.CommodityName}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">合约代码</div>
+                        <div class="info-value">${futures.Symbol}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">季节</div>
+                        <div class="info-value">${marketData.CurrentSeason} Y${marketData.CurrentYear}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">总天数</div>
+                        <div class="info-value">${totalDays}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">平均价格</div>
+                        <div class="info-value">${avgPrice.toFixed(2)}g</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">价格区间</div>
+                        <div class="info-value">${minPrice.toFixed(2)} - ${maxPrice.toFixed(2)}g</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayChart(futures) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+
+            // 按天聚合数据（显示收盘价）
+            const stepsPerDay = futures.StepsPerDay || 1;
+            const dailyPrices = [];
+            const labels = [];
+
+            for (let day = 0; day < 28; day++) {
+                const dayEndIndex = (day + 1) * stepsPerDay - 1;
+                if (dayEndIndex < futures.ShadowPrices.length) {
+                    dailyPrices.push(futures.ShadowPrices[dayEndIndex]);
+                    labels.push(`Day ${day + 1}`);
+                }
+            }
+
+            // 添加基本面价值线
+            const fundamentalValues = futures.FundamentalValues || [];
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '收盘价',
+                            data: dailyPrices,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: '基本面价值',
+                            data: fundamentalValues,
+                            borderColor: '#f56565',
+                            backgroundColor: 'rgba(245, 101, 101, 0.1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `${futures.CommodityName} 价格走势 (收盘价)`,
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: '价格 (g)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '游戏日期'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initializeDaySelect(futures) {
+            const stepsPerDay = futures.StepsPerDay || 1;
+            const totalDays = Math.floor(futures.ShadowPrices.length / stepsPerDay);
+
+            daySelect.innerHTML = '<option value="">选择要查看的日期...</option>';
+
+            for (let day = 0; day < Math.min(totalDays, 28); day++) {
+                const option = document.createElement('option');
+                option.value = day;
+                option.textContent = `Day ${day + 1}`;
+                daySelect.appendChild(option);
+            }
+
+            intradaySection.style.display = 'block';
+        }
+
+        function handleDaySelect() {
+            const selectedDay = parseInt(daySelect.value);
+            if (isNaN(selectedDay) || !currentFutures) return;
+
+            displayIntradayChart(currentFutures, selectedDay);
+        }
+
+        function displayIntradayChart(futures, day) {
+            const ctx = document.getElementById('intradayChart').getContext('2d');
+            const stepsPerDay = futures.StepsPerDay || 1;
+
+            // 提取选定日期的所有阶段价格
+            const startIndex = day * stepsPerDay;
+            const endIndex = startIndex + stepsPerDay;
+            const intradayPrices = futures.ShadowPrices.slice(startIndex, endIndex);
+
+            // 创建时间标签
+            const labels = [];
+            for (let i = 0; i < intradayPrices.length; i++) {
+                const progress = (i / (stepsPerDay - 1) * 100).toFixed(0);
+                labels.push(`${progress}%`);
+            }
+
+            // 获取当天的新闻事件（盘中）
+            const dayNews = (futures.ScheduledNews || []).filter(news =>
+                news.TriggerDay === day + 1 &&
+                news.TriggerTimeRatio !== undefined &&
+                news.TriggerTimeRatio !== null
+            );
+
+            if (intradayChart) {
+                intradayChart.destroy();
+            }
+
+            intradayChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '影子价格',
+                        data: intradayPrices,
+                        borderColor: '#48bb78',
+                        backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Day ${day + 1} - ${futures.CommodityName} 日内价格走势${dayNews.length > 0 ? ` (含${dayNews.length}个盘中新闻)` : ''}`,
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: function (context) {
+                                    const index = context[0].dataIndex;
+                                    const progress = (index / (stepsPerDay - 1) * 100).toFixed(1);
+                                    return `交易进度: ${progress}%`;
+                                },
+                                label: function (context) {
+                                    return `价格: ${context.parsed.y.toFixed(2)}g`;
+                                },
+                                afterLabel: function (context) {
+                                    // 检查是否有新闻事件在此时间点
+                                    const index = context.dataIndex;
+                                    const newsAtPoint = dayNews.filter(news => {
+                                        const stepIndex = Math.floor(news.TriggerTimeRatio * stepsPerDay);
+                                        return stepIndex === index;
+                                    });
+
+                                    if (newsAtPoint.length > 0) {
+                                        return newsAtPoint.map(news => `📰 ${news.Event.Title}`);
+                                    }
+                                    return null;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: '价格 (g)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '交易时段进度'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayNews(futures) {
+            const scheduledNews = futures.ScheduledNews || [];
+
+            if (scheduledNews.length === 0) {
+                newsSection.innerHTML = '<h2>📰 新闻事件</h2><p style="color: #718096;">暂无新闻事件</p>';
+                return;
+            }
+
+            let newsHTML = '<h2>📰 新闻事件 (' + scheduledNews.length + ')</h2>';
+
+            scheduledNews.forEach(newsEvent => {
+                const event = newsEvent.Event;
+                const impact = event.Impact || {};
+                const demandImpact = impact.demand_impact || impact.DemandImpact || 0;
+                const supplyImpact = impact.supply_impact || impact.SupplyImpact || 0;
+                const netImpact = demandImpact - supplyImpact;
+
+                let impactClass = '';
+                let impactIcon = '📊';
+                if (netImpact > 100) {
+                    impactClass = 'positive';
+                    impactIcon = '📈';
+                } else if (netImpact < -100) {
+                    impactClass = 'negative';
+                    impactIcon = '📉';
+                }
+
+                const triggerTime = newsEvent.TriggerTimeRatio
+                    ? ` (盘中 ${(newsEvent.TriggerTimeRatio * 100).toFixed(0)}%)`
+                    : ' (盘后)';
+
+                newsHTML += `
+                    <div class="news-item ${impactClass}">
+                        <div class="news-title">${impactIcon} Day ${newsEvent.TriggerDay}${triggerTime}: ${event.Title}</div>
+                        <div class="news-impact">
+                            需求影响: <strong>${demandImpact > 0 ? '+' : ''}${demandImpact}</strong> | 
+                            供给影响: <strong>${supplyImpact > 0 ? '+' : ''}${supplyImpact}</strong> | 
+                            净影响: <strong style="color: ${netImpact > 0 ? '#48bb78' : '#f56565'}">${netImpact > 0 ? '+' : ''}${netImpact.toFixed(0)}</strong>
+                        </div>
+                    </div>
+                `;
+            });
+
+            newsSection.innerHTML = newsHTML;
+        }
+
+        function showError(message) {
+            errorMessage.innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+    </script>
+</body>
+
+</html>

@@ -65,21 +65,22 @@ namespace StardewCapital.Services.Adapters
                 10  // 每10分钟一个数据点
             );
 
-            // 4. 构建输入
+            // 4. 构建输入（从配置文件读取参数）
+            var shadowConfig = _rules.ShadowPricing;
             var input = new PriceCalculationInput
             {
                 CommodityName = futures.CommodityName,
                 CommodityConfig = commodityConfig,
                 StartPrice = initialPrice,
                 Season = season,
-                TotalDays = 28,
+                TotalDays = shadowConfig.TimeSettings.TotalDays,
                 StepsPerDay = stepsPerDay,
-                OpeningTime = _config.OpeningTime,
-                ClosingTime = _config.ClosingTime,
+                OpeningTime = shadowConfig.TimeSettings.OpeningTime,
+                ClosingTime = shadowConfig.TimeSettings.ClosingTime,
                 NewsTemplates = LoadNewsTemplates(),
                 MarketRules = _rules,
-                BaseVolatility = 0.02,
-                IntraVolatility = 0.005,
+                BaseVolatility = shadowConfig.Volatility.BaseVolatility,
+                IntraVolatility = shadowConfig.Volatility.IntraVolatility,
                 RandomSeed = null
             };
 

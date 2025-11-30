@@ -124,7 +124,8 @@ namespace StardewCapital.Core.Calculation
                     currentOpenPrice,
                     nextClose,
                     input.StepsPerDay,
-                    input.IntraVolatility
+                    input.IntraVolatility,
+                    input
                 );
                 
                 // 3.7 填充数组
@@ -157,13 +158,17 @@ namespace StardewCapital.Core.Calculation
             double startPrice,
             double targetPrice,
             int steps,
-            double intraVolatility)
+            double intraVolatility,
+            PriceCalculationInput input)
         {
             if (steps < 2) steps = 2;
             
             float[] prices = new float[steps];
             double currentPrice = startPrice;
             prices[0] = (float)currentPrice;
+            
+            // 从配置读取布朗桥参数
+            var bbConfig = input.MarketRules.ShadowPricing.BrownianBridge;
             
             for (int i = 1; i < steps; i++)
             {
@@ -176,7 +181,10 @@ namespace StardewCapital.Core.Calculation
                     timeRatio,
                     timeStep,
                     intraVolatility,
-                    _random
+                    _random,
+                    bbConfig.OpeningShockAlpha,
+                    bbConfig.ShockDecayLambda,
+                    bbConfig.NoiseScaleFactor
                 );
                 
                 nextPrice = System.Math.Max(0.01, nextPrice);

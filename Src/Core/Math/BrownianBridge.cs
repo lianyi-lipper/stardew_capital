@@ -23,8 +23,19 @@ namespace StardewCapital.Core.Math
         /// <param name="timeRatio">tau：当前时间进度（0.0 = 开盘，1.0 = 收盘）</param>
         /// <param name="timeStep">dt：这一帧的时间步长（当前帧 timeRatio - 上一帧 timeRatio）</param>
         /// <param name="intraVolatility">sigma_intra：日内波动率参数</param>
+        /// <param name="alpha">开盘冲击系数（默认2.0）</param>
+        /// <param name="lambda">冲击衰减速度（默认10.0）</param>
         /// <returns>P_{tau+1}：下一帧的价格</returns>
-        public static double CalculateNextTickPrice(double currentPrice, double targetPrice, double timeRatio, double timeStep, double intraVolatility, Random? random = null)
+        public static double CalculateNextTickPrice(
+            double currentPrice, 
+            double targetPrice, 
+            double timeRatio, 
+            double timeStep, 
+            double intraVolatility, 
+            Random? random = null,
+            double alpha = 2.0,
+            double lambda = 10.0,
+            double noiseScaleFactor = 5.0)
         {
             // 1. 计算剩余时间比例 (T_remain = 1.0 - tau)
             double t_remain = 1.0 - timeRatio;
@@ -40,10 +51,8 @@ namespace StardewCapital.Core.Math
 
             // 3. 计算波动率微笑因子 (Psi)
             // Psi(tau) = (1 + alpha * e^(-lambda * tau)) * sqrt(T_remain)
-            // - 开盘冲击：alpha=2.0, lambda=10.0 导致开盘时波动大
+            // - 开盘冲击：alpha 导致开盘时波动大
             // - 收盘收敛：sqrt(T_remain) 导致收盘时波动小
-            double alpha = 2.0;
-            double lambda = 10.0;
             double openingShock = 1.0 + alpha * System.Math.Exp(-lambda * timeRatio);
             double closingConverge = System.Math.Sqrt(t_remain);
             
@@ -51,7 +60,7 @@ namespace StardewCapital.Core.Math
 
             // 4. 计算动态噪声
             double epsilon = StatisticsUtils.NextGaussian(random);
-            double noise = intraVolatility * psi * epsilon * System.Math.Sqrt(timeStep);
+            double noise = intraVolatility * psi * epsilon * noiseScaleFactor;
 
             // 5. 计算下一价格 = 当前价格 + 引力 + 噪声
             return currentPrice + gravity + noise;

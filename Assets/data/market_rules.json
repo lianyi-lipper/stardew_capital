@@ -9,6 +9,34 @@
         "riskFreeRate": 0.002,
         "_comment_riskFreeRate": "无风险利率（每日）| 默认: 0.002 (0.2%) | 含义: 资金的时间价值"
     },
+    "//_5a": "=== 影子价格生成参数 (Shadow Pricing - 独立于游戏逻辑) ===",
+    "shadowPricing": {
+        "_comment": "影子价格系统参数配置，用于预生成整个季度的价格轨迹",
+        "volatility": {
+            "baseVolatility": 0.02,
+            "_comment_baseVolatility": "日间波动率 | 默认: 0.02 (2%) | 用于: GBM计算每日收盘价 | 调整: 增大会让日间价格跳动更大",
+            "intraVolatility": 0.2,
+            "_comment_intraVolatility": "日内波动率 | 默认: 0.2 (20%) | 用于: 布朗桥生成盘中价格 | 警告: 如设为0.005会导致日内走势像直线",
+            "earlyDayDampening": 0.5,
+            "_comment_earlyDayDampening": "前3天波动率衰减系数 | 默认: 0.5 | 用于: GBM早期稳定 | 含义: 季度开始时减少波动"
+        },
+        "brownianBridge": {
+            "openingShockAlpha": 2.0,
+            "_comment_openingShockAlpha": "开盘冲击系数 | 默认: 2.0 | 用于: 日内开盘时波动放大 | 调整: 越大开盘波动越剧烈",
+            "shockDecayLambda": 10.0,
+            "_comment_shockDecayLambda": "冲击衰减速度 | 默认: 10.0 | 用于: 控制开盘冲击消退速度 | 调整: 越大衰减越快",
+            "noiseScaleFactor": 5.0,
+            "_comment_noiseScaleFactor": "噪声缩放因子 | 默认: 5.0 | 用于: 控制日内价格波动幅度 | 调整: 越大波动越剧烈，建议5-10"
+        },
+        "timeSettings": {
+            "totalDays": 28,
+            "_comment_totalDays": "季度总天数 | 默认: 28 | 注意: 修改需要重新生成所有影子价格",
+            "openingTime": 600,
+            "_comment_openingTime": "市场开盘时间 (HHMM格式) | 默认: 600 (早上6:00)",
+            "closingTime": 2600,
+            "_comment_closingTime": "市场收盘时间 (HHMM格式) | 默认: 2600 (次日凌晨2:00) | 共20小时"
+        }
+    },
     "//_6": "=== 市场微观结构 (交易机制与冲击) ===",
     "marketMicrostructure": {
         "decayRate": 0.95,

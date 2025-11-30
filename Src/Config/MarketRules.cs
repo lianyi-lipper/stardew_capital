@@ -40,6 +40,11 @@ namespace StardewCapital.Config
         public NpcAgentsConfig NpcAgents { get; set; } = new();
 
         /// <summary>
+        /// 影子价格生成配置
+        /// </summary>
+        public ShadowPricingConfig ShadowPricing { get; set; } = new();
+
+        /// <summary>
         /// 具体金融工具配置
         /// </summary>
         public InstrumentConfig Instruments { get; set; } = new();
@@ -190,5 +195,89 @@ namespace StardewCapital.Config
         public double BaseStrength { get; set; } = 0.05;
         public double Threshold { get; set; } = 0.5;
         public int MovingAveragePeriod { get; set; } = 20;
+    }
+
+    /// <summary>
+    /// 影子价格生成配置
+    /// </summary>
+    public class ShadowPricingConfig
+    {
+        /// <summary>
+        /// 波动率参数
+        /// </summary>
+        public VolatilityConfig Volatility { get; set; } = new();
+
+        /// <summary>
+        /// 布朗桥参数
+        /// </summary>
+        public BrownianBridgeConfig BrownianBridge { get; set; } = new();
+
+        /// <summary>
+        /// 时间设置
+        /// </summary>
+        public TimeSettingsConfig TimeSettings { get; set; } = new();
+    }
+
+    /// <summary>
+    /// 波动率配置
+    /// </summary>
+    public class VolatilityConfig
+    {
+        /// <summary>
+        /// 日间波动率（用于GBM）
+        /// </summary>
+        public double BaseVolatility { get; set; } = 0.02;
+
+        /// <summary>
+        /// 日内波动率（用于布朗桥）
+        /// </summary>
+        public double IntraVolatility { get; set; } = 0.2;
+
+        /// <summary>
+        /// 前3天波动率衰减系数
+        /// </summary>
+        public double EarlyDayDampening { get; set; } = 0.5;
+    }
+
+    /// <summary>
+    /// 布朗桥配置
+    /// </summary>
+    public class BrownianBridgeConfig
+    {
+        /// <summary>
+        /// 开盘冲击系数（alpha）
+        /// </summary>
+        public double OpeningShockAlpha { get; set; } = 2.0;
+
+        /// <summary>
+        /// 冲击衰减速度（lambda）
+        /// </summary>
+        public double ShockDecayLambda { get; set; } = 10.0;
+
+        /// <summary>
+        /// 噪声缩放因子（替代 sqrt(timeStep) 以避免步数影响）
+        /// </summary>
+        public double NoiseScaleFactor { get; set; } = 5.0;
+    }
+
+    /// <summary>
+    /// 时间设置配置
+    /// </summary>
+    public class TimeSettingsConfig
+    {
+        /// <summary>
+        /// 季度总天数
+        /// </summary>
+        public int TotalDays { get; set; } = 28;
+
+        /// <summary>
+        /// 市场开盘时间（HHMM格式）
+        /// </summary>
+        public int OpeningTime { get; set; } = 600;
+
+        /// <summary>
+        /// 市场收盘时间（HHMM格式）
+        /// </summary>
+        public int ClosingTime { get; set; } = 2600;
     }
 }

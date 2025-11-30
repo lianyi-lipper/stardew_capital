@@ -31,6 +31,7 @@ namespace StardewCapital.Services.Market
         private readonly ScenarioManager _scenarioManager;
         private readonly MarketManager _marketManager;
         private readonly MarketRules _rules;
+        private readonly NPCAgentManager _npcAgentManager; // ← 添加这个字段
         
         // 新的服务组件
         private readonly CircuitBreakerService _circuitBreakerService;
@@ -67,7 +68,8 @@ namespace StardewCapital.Services.Market
             ModConfig config,
             MarketManager marketManager,
             OrderBookManager orderBookManager,
-            MarketRules rules)
+            MarketRules rules,
+            NPCAgentManager npcAgentManager) // ← 添加这个参数
         {
             _monitor = monitor;
             _clock = clock;
@@ -78,6 +80,7 @@ namespace StardewCapital.Services.Market
             _scenarioManager = scenarioManager;
             _marketManager = marketManager;
             _rules = rules;
+            _npcAgentManager = npcAgentManager; // ← 添加这个赋值
             
             _dailyTargets = new Dictionary<string, double>();
             CurrentShadowPrice = new Dictionary<string, double>();
@@ -92,7 +95,8 @@ namespace StardewCapital.Services.Market
             _virtualFlowProcessor = new VirtualFlowProcessor(
                 monitor,
                 marketManager,
-                orderBookManager
+                orderBookManager,
+                npcAgentManager // ← 添加这个参数
             );
         }
 

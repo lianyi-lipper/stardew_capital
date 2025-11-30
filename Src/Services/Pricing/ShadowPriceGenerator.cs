@@ -35,12 +35,12 @@ namespace StardewCapital.Services.Pricing
         /// </summary>
         /// <param name="startPrice">开盘价</param>
         /// <param name="targetPrice">目标收盘价</param>
-        /// <param name="intraVolatility">日内波动率 (默认 0.005)</param>
+        /// <param name="intraVolatility">日内波动率 (默认 0.02)</param>
         /// <returns>包含全天每10分钟价格的数组</returns>
         public float[] GenerateDailyShadowPrices(
             double startPrice,
             double targetPrice,
-            double intraVolatility = 0.005)
+            double intraVolatility = 0.02)
         {
             // 1. 计算总时间步数
             int startMinutes = _timeProvider.ToMinutes(_config.OpeningTime);
@@ -103,7 +103,7 @@ namespace StardewCapital.Services.Pricing
             double startPrice,
             double initialFundamentalValue,
             double baseVolatility = 0.02,
-            double intraVolatility = 0.005)
+            double intraVolatility = 0.02)
         {
             // 1. 计算总数据点数
             int startMinutes = _timeProvider.ToMinutes(_config.OpeningTime);

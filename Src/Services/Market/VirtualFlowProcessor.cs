@@ -124,7 +124,7 @@ namespace StardewCapital.Services.Market
                 // 6. 日志输出（调试用）
                 if (flowQuantity > 0 && vwap > 0)
                 {
-                    _monitor.Log(
+                    _monitor?.Log(
                         $"[OrderBook] {futures.Symbol}: VirtualFlow {(isBuyPressure ? "BUY" : "SELL")} {flowQuantity} @ VWAP={vwap:F2}g, Slippage={slippage:F2}g",
                         LogLevel.Debug
                     );
