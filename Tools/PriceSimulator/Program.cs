@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.IO;
-using StardewCapital.Domain.Market;
-using StardewCapital.Config;
-using StardewCapital.Services.News;
+using StardewCapital.Core.Futures.Domain.Market;
+using StardewCapital.Core.Futures.Config;
+using StardewCapital.Core.Futures.Data;
 
 namespace StardewCapital.Simulator
 {
@@ -39,21 +39,22 @@ namespace StardewCapital.Simulator
                     return;
                 }
 
-                // 3. 创建模拟运行器
-                var runner = new SimulationRunner(
-                    simulatorConfig,
-                    commodityConfigs,
-                    marketRules,
-                    newsTemplates
-                );
-
-                // 4. 运行模拟
-                var result = runner.RunSimulation();
-
-                // 5. 输出结果
-                string outputPath = Path.Combine(baseDirectory, simulatorConfig.simulation.outputPath);
-                OutputWriter.WriteJson(result, outputPath);
-                OutputWriter.PrintSummary(result);
+                // 3. 选择模拟模式
+                Console.WriteLine("\n请选择模拟模式:");
+                Console.WriteLine("1. 影子价格模拟 (Shadow Price) - 仅布朗桥 + 新闻");
+                Console.WriteLine("2. 实时价格模拟 (Realtime) - 完整系统（NPC + 订单簿 + 冲击）");
+                Console.Write("\n输入选择 [1/2]: ");
+                
+                string choice = Console.ReadLine() ?? "1";
+                
+                if (choice == "2")
+                {
+                    RunRealtimeSimulation(simulatorConfig, commodityConfigs, marketRules, baseDirectory);
+                }
+                else
+                {
+                    RunShadowPriceSimulation(simulatorConfig, commodityConfigs, marketRules, newsTemplates, baseDirectory);
+                }
 
                 Console.WriteLine("\n========== 模拟完成 ==========");
                 Console.WriteLine("提示: 可以修改 SimulatorConfig.json 来调整模拟参数");
@@ -70,6 +71,50 @@ namespace StardewCapital.Simulator
             Console.ReadKey();
         }
 
+        static void RunShadowPriceSimulation(
+            SimulatorConfig config,
+            System.Collections.Generic.List<CommodityConfig> commodityConfigs,
+            MarketRules marketRules,
+            System.Collections.Generic.List<NewsTemplate> newsTemplates,
+            string baseDirectory)
+        {
+            Console.WriteLine("\n========== 影子价格模拟模式 ==========\n");
+            
+            var runner = new SimulationRunner(
+                config,
+                commodityConfigs,
+                marketRules,
+                newsTemplates
+            );
+
+            var result = runner.RunSimulation();
+            
+            string outputPath = Path.Combine(baseDirectory, config.simulation.outputPath);
+            OutputWriter.WriteJson(result, outputPath);
+            OutputWriter.PrintSummary(result);
+        }
+
+        static void RunRealtimeSimulation(
+            SimulatorConfig config,
+            System.Collections.Generic.List<CommodityConfig> commodityConfigs,
+            MarketRules marketRules,
+            string baseDirectory)
+        {
+            Console.WriteLine("\n========== 实时价格模拟模式 ==========\n");
+            
+            var runner = new RealtimeSimulationRunner(
+                config,
+                commodityConfigs,
+                marketRules
+            );
+
+            var result = runner.Run();
+            
+            string outputPath = Path.Combine(baseDirectory, "realtime_simulation_output.json");
+            OutputWriter.WriteRealtimeJson(result, outputPath);
+            OutputWriter.PrintRealtimeSummary(result);
+        }
+
         private static Season ParseSeason(string seasonStr)
         {
             return seasonStr.ToLower() switch
@@ -83,3 +128,4 @@ namespace StardewCapital.Simulator
         }
     }
 }
+

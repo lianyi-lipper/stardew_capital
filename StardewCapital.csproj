@@ -36,4 +36,15 @@
     <None Remove="Src\_Archived\**" /> 
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="StardewCapital.Core\**" />
+    <EmbeddedResource Remove="StardewCapital.Core\**" />
+    <None Remove="StardewCapital.Core\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 引用独立的 Core 类库 -->
+    <ProjectReference Include="StardewCapital.Core\StardewCapital.Core.csproj" />
+  </ItemGroup>
+
 </Project>

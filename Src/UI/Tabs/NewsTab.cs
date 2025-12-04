@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // 星露资本 (Stardew Capital)
 // 模块：交易终端界面
 // 作者：Stardew Capital Team
@@ -6,15 +6,18 @@
 // ============================================================================
 
 using System;
+using StardewCapital.Core.Futures.Services;
 using System.Linq;
+using StardewCapital.Core.Futures.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewCapital.Services.Market;
-using StardewCapital.Services.News;
-using StardewCapital.Domain.Market;
+using StardewCapital.Core.Futures.Data;
+using StardewCapital.Core.Futures.Domain.Market;
 using StardewValley;
 using StardewValley.Menus;
 using StardewModdingAPI;
+using StardewCapital.Services.News;
 
 namespace StardewCapital.UI.Tabs
 {
@@ -329,3 +332,6 @@ namespace StardewCapital.UI.Tabs
         }
     }
 }
+
+
+

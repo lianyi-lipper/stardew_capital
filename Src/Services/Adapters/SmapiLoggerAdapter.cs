@@ -1,11 +1,11 @@
-// ============================================================================
+﻿// ============================================================================
 // 星露谷资本 (Stardew Capital)
 // 模块：SMAPI日志适配器
 // 作者：Stardew Capital Team
 // 用途：将SMAPI的IMonitor适配为独立计算器的LogCallback
 // ============================================================================
 
-using StardewCapital.Core.Models;
+using StardewCapital.Core.Futures.Models;
 using StardewModdingAPI;
 
 namespace StardewCapital.Services.Adapters
@@ -46,3 +46,4 @@ namespace StardewCapital.Services.Adapters
         }
     }
 }
+

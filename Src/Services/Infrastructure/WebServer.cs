@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using StardewCapital.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Instruments;
 using StardewCapital.Services.Market;
 using StardewCapital.Services.Trading;
 using StardewModdingAPI;
@@ -665,3 +665,5 @@ namespace StardewCapital.Services.Infrastructure
         }
     }
 }
+
+

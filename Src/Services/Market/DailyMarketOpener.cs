@@ -1,8 +1,10 @@
-using System.Collections.Generic;
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Services.Pricing;
+﻿using System.Collections.Generic;
+using StardewCapital.Core.Futures.Services;
 using StardewCapital.Services.News;
-using StardewCapital.Config;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Services.Pricing;
+using StardewCapital.Core.Futures.Data;
+using StardewCapital.Core.Futures.Config;
 using StardewModdingAPI;
 using StardewValley;
 
@@ -171,3 +173,6 @@ namespace StardewCapital.Services.Market
         }
     }
 }
+
+
+

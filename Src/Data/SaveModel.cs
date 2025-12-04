@@ -1,5 +1,5 @@
-using System.Collections.Generic;
-using StardewCapital.Domain.Account;
+﻿using System.Collections.Generic;
+using StardewCapital.Core.Futures.Domain.Account;
 
 namespace StardewCapital.Data
 {
@@ -27,3 +27,4 @@ namespace StardewCapital.Data
         // public Dictionary<string, double> LastPrices { get; set; }
     }
 }
+

@@ -1,5 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using StardewCapital.Core.Futures.Data;
 using System.Text.Json.Serialization;
+using StardewCapital.Core.Futures.Data;
 
 namespace StardewCapital.Services.News
 {
@@ -15,3 +17,4 @@ namespace StardewCapital.Services.News
         public Dictionary<string, string> Metadata { get; set; } = new();
     }
 }
+

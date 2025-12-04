@@ -9,27 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Core层 - 只包含独立计算逻辑（排除依赖游戏的文件） -->
-    <Compile Include="..\..\Src\Core\Calculation\*.cs" Link="Core\Calculation\%(Filename)%(Extension)" />
-    <Compile Include="..\..\Src\Core\Math\*.cs" Link="Core\Math\%(Filename)%(Extension)" />
-    <Compile Include="..\..\Src\Core\Models\*.cs" Link="Core\Models\%(Filename)%(Extension)" />
-    <Compile Include="..\..\Src\Core\Utils\*.cs" Link="Core\Utils\%(Filename)%(Extension)" />
-    <!-- Time目录只包含IGameTimeProvider接口，排除MixedTimeClock -->
-    <Compile Include="..\..\Src\Core\Time\IGameTimeProvider.cs" Link="Core\Time\IGameTimeProvider.cs" />
-    
-    <!-- Config层 - 只包含独立配置类（排除PendingConfigChange） -->
-    <Compile Include="..\..\Src\Config\MarketRules.cs" Link="Config\MarketRules.cs" />
-
-    
-    <!-- Data层 - 只包含SaveData子目录（排除SaveModel） -->
-    <Compile Include="..\..\Src\Data\SaveData\*.cs" Link="Data\SaveData\%(Filename)%(Extension)" />
-    
-    <!-- Domain/Market - 所有市场相关类（包括子目录） -->
-    <Compile Include="..\..\Src\Domain\Market\*.cs" Link="Domain\Market\%(Filename)%(Extension)" />
-    <Compile Include="..\..\Src\Domain\Market\MarketState\*.cs" Link="Domain\Market\MarketState\%(Filename)%(Extension)" />
-    
-    <!-- Services/News - 只需NewsTemplate -->
-    <Compile Include="..\..\Src\Services\News\NewsTemplate.cs" Link="Services\News\NewsTemplate.cs" />
+    <!-- 引用独立的 Core 类库，替代之前的文件链接 -->
+    <ProjectReference Include="..\..\StardewCapital.Core\StardewCapital.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

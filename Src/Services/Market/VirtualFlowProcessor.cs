@@ -1,8 +1,10 @@
-using System;
+﻿using System;
+using StardewCapital.Core.Futures.Services;
 using System.Linq;
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Config;
-using StardewModdingAPI;
+using StardewCapital.Core.Futures.Services;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Config;
+using StardewCapital.Core.Common.Logging;
 
 namespace StardewCapital.Services.Market
 {
@@ -12,18 +14,18 @@ namespace StardewCapital.Services.Market
     /// </summary>
     public class VirtualFlowProcessor
     {
-        private readonly IMonitor _monitor;
+        private readonly ILogger _logger;
         private readonly MarketManager _marketManager;
         private readonly OrderBookManager _orderBookManager;
         private readonly NPCAgentManager _npcAgentManager;
 
         public VirtualFlowProcessor(
-            IMonitor monitor,
+            ILogger logger,
             MarketManager marketManager,
             OrderBookManager orderBookManager,
             NPCAgentManager npcAgentManager)
         {
-            _monitor = monitor;
+            _logger = logger;
             _marketManager = marketManager;
             _orderBookManager = orderBookManager;
             _npcAgentManager = npcAgentManager;
@@ -37,14 +39,14 @@ namespace StardewCapital.Services.Market
             // 防御性检查：确保依赖服务已初始化
             if (_marketManager == null || _orderBookManager == null)
             {
-                _monitor?.Log("[VirtualFlow] MarketManager or OrderBookManager is null, skipping", LogLevel.Trace);
+                _logger?.Log("[VirtualFlow] MarketManager or OrderBookManager is null, skipping", LogLevel.Trace);
                 return;
             }
 
             var instruments = _marketManager.GetInstruments();
             if (instruments == null)
             {
-                _monitor?.Log("[VirtualFlow] No instruments available, skipping", LogLevel.Trace);
+                _logger?.Log("[VirtualFlow] No instruments available, skipping", LogLevel.Trace);
                 return;
             }
                 
@@ -97,7 +99,7 @@ namespace StardewCapital.Services.Market
                     flowQuantity = Math.Abs((int)forces.TotalFlow);
                     isBuyPressure = forces.TotalFlow > 0; // 正流量=买压，负流量=卖压
                     
-                    _monitor?.Log(
+                    _logger?.Log(
                         $"[VirtualFlow] {futures.Symbol}: Using NPC forces - " +
                         $"Total={forces.TotalFlow:F1}, Smart={forces.SmartMoneyFlow:F1}, " +
                         $"Trend={forces.TrendFlow:F1}, FOMO={forces.FomoFlow:F1}",
@@ -108,7 +110,7 @@ namespace StardewCapital.Services.Market
                 {
                     // 降级：如果没有NPC数据，使用简化计算
                     flowQuantity = CalculateFlowQuantity(priceDiff);
-                    _monitor?.Log(
+                    _logger?.Log(
                         $"[VirtualFlow] {futures.Symbol}: No NPC data, using fallback calculation",
                         LogLevel.Debug
                     );
@@ -124,7 +126,7 @@ namespace StardewCapital.Services.Market
                 // 6. 日志输出（调试用）
                 if (flowQuantity > 0 && vwap > 0)
                 {
-                    _monitor?.Log(
+                    _logger?.Log(
                         $"[OrderBook] {futures.Symbol}: VirtualFlow {(isBuyPressure ? "BUY" : "SELL")} {flowQuantity} @ VWAP={vwap:F2}g, Slippage={slippage:F2}g",
                         LogLevel.Debug
                     );
@@ -151,3 +153,5 @@ namespace StardewCapital.Services.Market
         }
     }
 }
+
+

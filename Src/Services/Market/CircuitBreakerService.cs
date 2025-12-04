@@ -1,6 +1,6 @@
-using System;
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Config;
+﻿using System;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Config;
 using StardewModdingAPI;
 
 namespace StardewCapital.Services.Market
@@ -83,3 +83,4 @@ namespace StardewCapital.Services.Market
         }
     }
 }
+

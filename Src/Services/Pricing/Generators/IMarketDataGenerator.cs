@@ -1,6 +1,6 @@
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Domain.Market;
-using StardewCapital.Domain.Market.MarketState;
+﻿using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Market;
+using StardewCapital.Core.Futures.Domain.Market.MarketState;
 
 namespace StardewCapital.Services.Pricing.Generators
 {
@@ -20,3 +20,4 @@ namespace StardewCapital.Services.Pricing.Generators
         IMarketState Generate(IInstrument instrument, Season season, int year);
     }
 }
+

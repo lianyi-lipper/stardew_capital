@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.Json;
-using StardewCapital.Data.SaveData;
+using StardewCapital.Core.Futures.Data;
 
 namespace StardewCapital.Simulator
 {
@@ -65,5 +65,71 @@ namespace StardewCapital.Simulator
                 Console.WriteLine($"  到期日: Day {futuresState.DeliveryDay}");
             }
         }
+
+        /// <summary>
+        /// 写入实时模拟结果到JSON
+        /// </summary>
+        public static void WriteRealtimeJson(RealtimeSimulationResult data, string outputPath)
+        {
+            try
+            {
+                string? directory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                string json = JsonSerializer.Serialize(data, new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                File.WriteAllText(outputPath, json);
+
+                Console.WriteLine($"\n✓ 实时数据已保存到: {Path.GetFullPath(outputPath)}");
+                Console.WriteLine($"  文件大小: {new FileInfo(outputPath).Length / 1024.0:F2} KB");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n✗ 保存失败: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 打印实时模拟摘要
+        /// </summary>
+        public static void PrintRealtimeSummary(RealtimeSimulationResult result)
+        {
+            if (result.FrameData.Count == 0)
+            {
+                Console.WriteLine("\n⚠ 没有生成任何数据");
+                return;
+            }
+
+            var firstFrame = result.FrameData[0];
+            var lastFrame = result.FrameData[^1];
+
+            Console.WriteLine($"\n========== 实时模拟摘要 ==========");
+            Console.WriteLine($"商品: {result.CommodityName}");
+            Console.WriteLine($"数据点数: {result.FrameData.Count}");
+            Console.WriteLine($"\n价格统计:");
+            Console.WriteLine($"  开始价格: {firstFrame.RealtimePrice:F2}g");
+            Console.WriteLine($"  结束价格: {lastFrame.RealtimePrice:F2}g");
+            Console.WriteLine($"  价格变化: {(lastFrame.RealtimePrice - firstFrame.RealtimePrice):+0.00;-0.00}g");
+            
+            Console.WriteLine($"\n冲击统计:");
+            Console.WriteLine($"  开始冲击: {firstFrame.Impact:+0.00;-0.00}g");
+            Console.WriteLine($"  结束冲击: {lastFrame.Impact:+0.00;-0.00}g");
+            
+            Console.WriteLine($"\nNPC力量（最后时刻）:");
+            Console.WriteLine($"  基础流量: {lastFrame.NPCForces.BaseFlow:F0}");
+            Console.WriteLine($"  聪明钱: {lastFrame.NPCForces.SmartMoneyFlow:F0}");
+            Console.WriteLine($"  趋势派: {lastFrame.NPCForces.TrendFlow:F0}");
+            Console.WriteLine($"  FOMO: {lastFrame.NPCForces.FomoFlow:F0}");
+            Console.WriteLine($"  总流量: {lastFrame.NPCForces.TotalFlow:F0}");
+        }
     }
 }
+

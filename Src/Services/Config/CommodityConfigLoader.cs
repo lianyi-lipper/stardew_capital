@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // 星露谷资本 (Stardew Capital)
 // 模块：商品配置加载器
 // 作者：Stardew Capital Team
@@ -7,7 +7,7 @@
 
 using System;
 using System.Collections.Generic;
-using StardewCapital.Domain.Market;
+using StardewCapital.Core.Futures.Domain.Market;
 using StardewModdingAPI;
 
 namespace StardewCapital.Services.Config
@@ -162,3 +162,4 @@ namespace StardewCapital.Services.Config
         }
     }
 }
+

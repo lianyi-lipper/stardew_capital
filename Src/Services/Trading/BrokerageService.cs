@@ -1,9 +1,12 @@
-using System;
+﻿using System;
+using StardewCapital.Core.Futures.Services;
 using System.Collections.Generic;
+using StardewCapital.Core.Futures.Services;
 using System.Linq;
-using StardewCapital.Domain.Account;
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Domain.Market;
+using StardewCapital.Core.Futures.Services;
+using StardewCapital.Core.Futures.Domain.Account;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Market;
 using StardewCapital.Services.Market;
 using StardewCapital.Services.Infrastructure;
 using StardewModdingAPI;
@@ -537,3 +540,6 @@ namespace StardewCapital.Services.Trading
         }
     }
 }
+
+
+

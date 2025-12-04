@@ -1,10 +1,13 @@
-using System;
+﻿using System;
+using StardewCapital.Core.Futures.Services;
 using System.Collections.Generic;
+using StardewCapital.Core.Futures.Services;
 using System.Linq;
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Domain.Market;
+using StardewCapital.Core.Futures.Services;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Market;
 using StardewCapital.Services.Trading;
-using StardewModdingAPI;
+using StardewCapital.Core.Common.Logging;
 
 namespace StardewCapital.Services.Market
 {
@@ -20,7 +23,7 @@ namespace StardewCapital.Services.Market
     /// </summary>
     public class OrderBookManager
     {
-        private readonly IMonitor _monitor;
+        private readonly ILogger _logger;
         private readonly ImpactService _impactService;
         private readonly MarketManager _marketManager;
         private BrokerageService? _brokerageService;
@@ -32,11 +35,11 @@ namespace StardewCapital.Services.Market
         private Dictionary<string, OrderBook> _orderBooks;
 
         public OrderBookManager(
-            IMonitor monitor,
+            ILogger logger,
             ImpactService impactService,
             MarketManager marketManager)
         {
-            _monitor = monitor;
+            _logger = logger;
             _impactService = impactService;
             _marketManager = marketManager;
             _orderBooks = new Dictionary<string, OrderBook>();
@@ -129,7 +132,7 @@ namespace StardewCapital.Services.Market
                             liquiditySensitivity: config.LiquiditySensitivity
                         );
                         
-                        _monitor.Log(
+                        _logger?.Log(
                             $"[Impact] Passive fill: {fillInfo.Symbol} {(fillInfo.IsBuy ? "BUY" : "SELL")} " +
                             $"{fillInfo.FillQuantity} → Impact qty={impactQuantity}",
                             LogLevel.Debug
@@ -178,3 +181,5 @@ namespace StardewCapital.Services.Market
         }
     }
 }
+
+

@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 using System.Linq;
-using StardewCapital.Domain.Account;
+using StardewCapital.Core.Futures.Domain.Account;
 using StardewCapital.Services.Market;
 using StardewModdingAPI;
 using StardewValley;
@@ -125,3 +125,5 @@ namespace StardewCapital.Services.Trading
         }
     }
 }
+
+

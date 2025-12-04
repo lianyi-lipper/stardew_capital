@@ -1,13 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using StardewCapital.Core.Time;
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Domain.Market;
-using StardewCapital.Services.Pricing;
+﻿using System;
+using StardewCapital.Core.Futures.Services;
 using StardewCapital.Services.News;
+using StardewCapital.Core.Time;
+using System.Collections.Generic;
+using StardewCapital.Core.Futures.Services;
+using System.Linq;
+using StardewCapital.Core.Futures.Services;
+using StardewCapital.Core.Common.Time;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Market;
+using StardewCapital.Services.Pricing;
+using StardewCapital.Core.Futures.Data;
 using StardewModdingAPI;
-using StardewCapital.Config;
+using StardewCapital.Core.Futures.Config;
+using StardewCapital.Core.Common.Logging;
 using StardewValley;
 
 namespace StardewCapital.Services.Market
@@ -23,6 +29,7 @@ namespace StardewCapital.Services.Market
     public class MarketPriceUpdater
     {
         private readonly IMonitor _monitor;
+        private readonly ILogger _logger;
         private readonly MixedTimeClock _clock;
         private readonly PriceEngine _priceEngine;
         private readonly FundamentalEngine _fundamentalEngine;
@@ -69,9 +76,11 @@ namespace StardewCapital.Services.Market
             MarketManager marketManager,
             OrderBookManager orderBookManager,
             MarketRules rules,
-            NPCAgentManager npcAgentManager) // ← 添加这个参数
+            NPCAgentManager npcAgentManager, // ← 添加这个参数
+            ILogger logger) // ← 添加logger参数
         {
             _monitor = monitor;
+            _logger = logger;
             _clock = clock;
             _priceEngine = priceEngine;
             _fundamentalEngine = fundamentalEngine;
@@ -93,7 +102,7 @@ namespace StardewCapital.Services.Market
             _circuitBreakerService = new CircuitBreakerService(monitor, rules);
             
             _virtualFlowProcessor = new VirtualFlowProcessor(
-                monitor,
+                logger,
                 marketManager,
                 orderBookManager,
                 npcAgentManager // ← 添加这个参数
@@ -238,7 +247,7 @@ namespace StardewCapital.Services.Market
                                     $"[Price] {futures.Symbol} | " +
                                     $"Futures={futures.FuturesPrice:F2}g, Spot={instrument.CurrentPrice:F2}g, " +
                                     $"Basis={basis:+0.00;-0.00}g, Impact={impact:+0.00;-0.00}g",
-                                    LogLevel.Info
+                                    StardewModdingAPI.LogLevel.Info
                                 );
                             }
                         }
@@ -316,3 +325,6 @@ namespace StardewCapital.Services.Market
         }
     }
 }
+
+
+

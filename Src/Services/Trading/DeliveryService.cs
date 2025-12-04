@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using StardewCapital.Domain.Account;
-using StardewCapital.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Account;
+using StardewCapital.Core.Futures.Domain.Instruments;
 using StardewModdingAPI;
 using StardewValley;
 using Microsoft.Xna.Framework;
@@ -292,3 +292,5 @@ namespace StardewCapital.Services.Trading
         }
     }
 }
+
+

@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // 星露谷资本 (Stardew Capital)
 // 模块：新闻生成器服务
 // 作者：Stardew Capital Team
@@ -6,13 +6,19 @@
 // ============================================================================
 
 using System;
+using StardewCapital.Core.Futures.Data;
 using System.Collections.Generic;
+using StardewCapital.Core.Futures.Data;
 using System.IO;
+using StardewCapital.Core.Futures.Data;
 using System.Linq;
+using StardewCapital.Core.Futures.Data;
 using System.Text.Json;
+using StardewCapital.Core.Futures.Data;
 using System.Text.Json.Serialization;
+using StardewCapital.Core.Futures.Data;
 using StardewModdingAPI;
-using StardewCapital.Domain.Market;
+using StardewCapital.Core.Futures.Domain.Market;
 
 namespace StardewCapital.Services.News
 {
@@ -316,3 +322,5 @@ SupplyImpact = Math.Round(template.Impact.SupplyImpact + GetRandomOffset(templat
         }
     }
 }
+
+

@@ -1,14 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using StardewCapital.Config;
-using StardewCapital.Core.Calculation;
-using StardewCapital.Core.Models;
-using StardewCapital.Core.Utils;
-using StardewCapital.Domain.Market;
-using StardewCapital.Domain.Market.MarketState;
-using StardewCapital.Data.SaveData;
-using StardewCapital.Services.News;
+using StardewCapital.Core.Futures.Config;
+using StardewCapital.Core.Futures.Calculation;
+using StardewCapital.Core.Futures.Models;
+using StardewCapital.Core.Common.Utils;
+using StardewCapital.Core.Futures.Domain.Market;
+using StardewCapital.Core.Futures.Domain.Market.MarketState;
+using StardewCapital.Core.Futures.Data;
 
 namespace StardewCapital.Simulator
 {
@@ -204,3 +203,5 @@ namespace StardewCapital.Simulator
         }
     }
 }
+
+

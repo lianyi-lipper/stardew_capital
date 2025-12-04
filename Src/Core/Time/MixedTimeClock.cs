@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using StardewCapital.Core.Common.Time;
 using StardewValley;
 
 namespace StardewCapital.Core.Time
@@ -65,3 +66,4 @@ namespace StardewCapital.Core.Time
         }
     }
 }
+

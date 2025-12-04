@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // 星露谷资本 (Stardew Capital)
 // 模块:游戏价格计算器适配器
 // 作者：Stardew Capital Team
@@ -6,15 +6,16 @@
 // ============================================================================
 
 using System;
-using System.Collections.Generic;
-using StardewCapital.Config;
-using StardewCapital.Core.Calculation;
-using StardewCapital.Core.Models;
-using StardewCapital.Core.Utils;
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Domain.Market;
-using StardewCapital.Domain.Market.MarketState;
 using StardewCapital.Services.News;
+using System.Collections.Generic;
+using StardewCapital.Core.Futures.Config;
+using StardewCapital.Core.Futures.Calculation;
+using StardewCapital.Core.Futures.Models;
+using StardewCapital.Core.Common.Utils;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Market;
+using StardewCapital.Core.Futures.Domain.Market.MarketState;
+using StardewCapital.Core.Futures.Data;
 using StardewCapital.Services.Pricing;
 
 namespace StardewCapital.Services.Adapters
@@ -124,10 +125,14 @@ namespace StardewCapital.Services.Adapters
         /// <summary>
         /// 加载新闻模板
         /// </summary>
-        private List<NewsTemplate> LoadNewsTemplates()
+        private List<StardewCapital.Core.Futures.Data.NewsTemplate> LoadNewsTemplates()
         {
             // 直接从 NewsGenerator 获取已加载的模板
             return _newsGenerator.GetNewsTemplates();
         }
     }
 }
+
+
+
+

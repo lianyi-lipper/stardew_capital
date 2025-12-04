@@ -1,7 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using StardewCapital.Domain.Market;
-using StardewCapital.Domain.Market.MarketState;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Market;
 using StardewModdingAPI;
 
 namespace StardewCapital.Services.Market
@@ -16,6 +16,8 @@ namespace StardewCapital.Services.Market
         private readonly IMonitor _monitor;
         private readonly MarketStateManager _marketStateManager;
         private readonly MarketTimeCalculator _timeCalculator;
+        private readonly IntradayNewsImpactService? _newsImpactService;
+        private readonly MarketManager? _marketManager;
 
         // 新闻历史和活跃列表（由外部管理）
         private List<NewsEvent> _newsHistory;
@@ -24,11 +26,15 @@ namespace StardewCapital.Services.Market
         public NewsSchedulePlayer(
             IMonitor monitor,
             MarketStateManager marketStateManager,
-            MarketTimeCalculator timeCalculator)
+            MarketTimeCalculator timeCalculator,
+            IntradayNewsImpactService? newsImpactService = null,
+            MarketManager? marketManager = null)
         {
             _monitor = monitor;
             _marketStateManager = marketStateManager;
             _timeCalculator = timeCalculator;
+            _newsImpactService = newsImpactService;
+            _marketManager = marketManager;
             _newsHistory = new List<NewsEvent>();
             _activeNewsEffects = new List<NewsEvent>();
         }
@@ -67,15 +73,29 @@ namespace StardewCapital.Services.Market
                     continue;
 
                 var newsEvent = scheduledNews.Event;
+                bool isIntradayNews = scheduledNews.TriggerTimeRatio.HasValue;
 
                 // 添加到历史和活跃列表
                 _newsHistory.Add(newsEvent);
                 _activeNewsEffects.Add(newsEvent);
 
+                // 判断是否为盘中新闻，如果是则施加即时价格冲击
+                if (isIntradayNews && _newsImpactService != null && _marketManager != null)
+                {
+                    // 获取所有期货合约
+                    var allFutures = _marketManager.GetInstruments()
+                        .OfType<CommodityFutures>()
+                        .ToList();
+
+                    // 批量应用价格冲击
+                    _newsImpactService.ApplyNewsShockToAll(newsEvent, allFutures);
+                }
+
                 _monitor.Log(
                     $"[News] Triggered: {newsEvent.Title} ({newsEvent.Scope.AffectedItems.FirstOrDefault() ?? "N/A"}) | " +
-                    $"D:{newsEvent.Impact.DemandImpact:+0;-0;0} S:{newsEvent.Impact.SupplyImpact:+0;-0;0}",
-                    LogLevel.Info
+                    $"D:{newsEvent.Impact.DemandImpact:+0;-0;0} S:{newsEvent.Impact.SupplyImpact:+0;-0;0}" +
+                    (isIntradayNews ? " [BREAKING]" : ""),
+                    isIntradayNews ? LogLevel.Warn : LogLevel.Info
                 );
             }
         }
@@ -115,7 +135,7 @@ namespace StardewCapital.Services.Market
             foreach (var symbol in allSymbols)
             {
                 var marketState = _marketStateManager.GetMarketState(symbol);
-                if (marketState is not Domain.Market.MarketState.FuturesMarketState futuresState)
+                if (marketState is not StardewCapital.Core.Futures.Domain.Market.MarketState.FuturesMarketState futuresState)
                     continue;
 
                 var scheduledNews = futuresState.ScheduledNews

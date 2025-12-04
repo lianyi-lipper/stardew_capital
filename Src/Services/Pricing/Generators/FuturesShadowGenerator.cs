@@ -1,11 +1,12 @@
-using System;
-using StardewCapital.Config;
-using StardewCapital.Core.Models;
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Domain.Market;
-using StardewCapital.Domain.Market.MarketState;
-using StardewCapital.Services.Adapters;
+﻿using System;
 using StardewCapital.Services.News;
+using StardewCapital.Core.Futures.Config;
+using StardewCapital.Core.Futures.Models;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Market;
+using StardewCapital.Core.Futures.Domain.Market.MarketState;
+using StardewCapital.Services.Adapters;
+using StardewCapital.Core.Futures.Data;
 using StardewCapital.Services.Pricing;
 using StardewModdingAPI;
 
@@ -57,3 +58,5 @@ namespace StardewCapital.Services.Pricing.Generators
         }
     }
 }
+
+

@@ -22,21 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- 引用核心计算层（排除游戏依赖的文件）-->
-    <Compile Include="..\..\Src\Core\**\*.cs" 
-             Exclude="..\..\Src\Core\obj\**;..\..\Src\Core\Time\MixedTimeClock.cs" />
-    
-    <!-- 引用领域模型 -->
-    <Compile Include="..\..\Src\Domain\**\*.cs" Exclude="..\..\Src\Domain\obj\**" />
-    
-    <!-- 引用Config（市场规则等）-->
-    <Compile Include="..\..\Src\Config\**\*.cs" 
-             Exclude="..\..\Src\Config\obj\**;..\..\Src\Config\PendingConfigChange.cs" />
-    
-    <!-- 引用Services中的独立组件（新闻模板等）-->
-    <Compile Include="..\..\Src\Services\News\NewsTemplate.cs" />
-    <Compile Include="..\..\Src\Services\News\NewsConfigFile.cs" />
-    
+    <!-- 引用独立的 Core 类库，替代之前的文件链接 -->
+    <ProjectReference Include="..\..\StardewCapital.Core\StardewCapital.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- 复制测试数据文件 -->
     <None Update="TestData\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

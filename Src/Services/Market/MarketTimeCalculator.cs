@@ -1,6 +1,7 @@
-using System;
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Domain.Market;
+﻿using System;
+using StardewCapital.Core.Futures.Domain;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Market;
 using StardewValley;
 
 namespace StardewCapital.Services.Market
@@ -14,17 +15,17 @@ namespace StardewCapital.Services.Market
         /// <summary>
         /// 获取当前游戏季节（转换为 CommodityConfig 的 Season 枚举）
         /// </summary>
-        public Domain.Market.Season GetCurrentSeason()
+        public StardewCapital.Core.Futures.Domain.Market.Season GetCurrentSeason()
         {
             string currentSeason = Game1.currentSeason;
             
             return currentSeason.ToLower() switch
             {
-                "spring" => Domain.Market.Season.Spring,
-                "summer" => Domain.Market.Season.Summer,
-                "fall" => Domain.Market.Season.Fall,
-                "winter" => Domain.Market.Season.Winter,
-                _ => Domain.Market.Season.Spring // 默认春季
+                "spring" => StardewCapital.Core.Futures.Domain.Market.Season.Spring,
+                "summer" => StardewCapital.Core.Futures.Domain.Market.Season.Summer,
+                "fall" => StardewCapital.Core.Futures.Domain.Market.Season.Fall,
+                "winter" => StardewCapital.Core.Futures.Domain.Market.Season.Winter,
+                _ => StardewCapital.Core.Futures.Domain.Market.Season.Spring // 默认春季
             };
         }
 
@@ -64,3 +65,6 @@ namespace StardewCapital.Services.Market
         }
     }
 }
+
+
+

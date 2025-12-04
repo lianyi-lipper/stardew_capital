@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // 星露资本 (Stardew Capital)
 // 模块：基本面价值计算引擎
 // 作者：Stardew Capital Team
@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using StardewCapital.Domain.Market;
+using StardewCapital.Core.Futures.Domain.Market;
 using StardewCapital.Services.Config;
 using StardewModdingAPI;
 
@@ -329,3 +329,4 @@ namespace StardewCapital.Services.Pricing
         }
     }
 }
+

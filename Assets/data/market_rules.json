@@ -4,6 +4,7 @@
     "//_2": "用途：定义游戏经济系统的核心数学常数和规则",
     "//_3": "注意：此文件包含核心数值策划参数，修改可能导致经济模型失衡",
     "//_4": "====================================================================",
+    "//_DEBUG": "⚠️ 调试模式: 玩家和NPC影响已禁用，仅保留影子价格系统",
     "//_5": "=== 宏观经济参数 (所有金融产品公用) ===",
     "macro": {
         "riskFreeRate": 0.002,
@@ -31,54 +32,54 @@
         "timeSettings": {
             "totalDays": 28,
             "_comment_totalDays": "季度总天数 | 默认: 28 | 注意: 修改需要重新生成所有影子价格",
-            "openingTime": 600,
+            "openingTime": 630,
             "_comment_openingTime": "市场开盘时间 (HHMM格式) | 默认: 600 (早上6:00)",
             "closingTime": 2600,
             "_comment_closingTime": "市场收盘时间 (HHMM格式) | 默认: 2600 (次日凌晨2:00) | 共20小时"
         }
     },
-    "//_6": "=== 市场微观结构 (交易机制与冲击) ===",
+    "//_6": "=== 市场微观结构 (交易机制与冲击) - [调试模式禁用] ===",
     "marketMicrostructure": {
         "decayRate": 0.95,
         "_comment_decayRate": "冲击衰减率（每帧）| 范围: 0.8-0.99 | 默认: 0.95",
         "movingAveragePeriod": 20,
         "_comment_movingAveragePeriod": "移动平均线周期 | 范围: 5-50 | 默认: 20",
-        "scenarioSwitchProbability": 0.3,
-        "_comment_scenarioSwitchProbability": "剧本切换概率（每日）| 范围: 0.0-1.0 | 默认: 0.3",
-        "maxImpactClamp": 30.0,
-        "_comment_maxImpactClamp": "冲击值上限（金币）| 默认: 30.0",
+        "scenarioSwitchProbability": 0.0,
+        "_comment_scenarioSwitchProbability": "剧本切换概率（每日）| 范围: 0.0-1.0 | 默认: 0.3 | [调试模式禁用]",
+        "maxImpactClamp": 0.0,
+        "_comment_maxImpactClamp": "冲击值上限（金币）| 默认: 30.0 | [调试模式禁用]",
         "scenarios": {
             "deadMarket": {
-                "smartMoneyStrength": 0.8,
-                "trendFollowerStrength": 0.1,
+                "smartMoneyStrength": 0.0,
+                "trendFollowerStrength": 0.0,
                 "fomoStrength": 0.0,
                 "asymmetricDown": 1.0,
-                "description": "死水一潭 - 价格强力回归基本面，无跟风情绪"
+                "description": "死水一潭 - [调试模式禁用]"
             },
             "irrationalExuberance": {
                 "smartMoneyStrength": 0.0,
-                "trendFollowerStrength": 0.3,
-                "fomoStrength": 0.9,
+                "trendFollowerStrength": 0.0,
+                "fomoStrength": 0.0,
                 "asymmetricDown": 1.0,
-                "description": "非理性繁荣 - 聪明钱消失，极端情绪主导"
+                "description": "非理性繁荣 - [调试模式禁用]"
             },
             "panicSelling": {
-                "smartMoneyStrength": 0.3,
-                "trendFollowerStrength": 0.4,
-                "fomoStrength": 0.6,
-                "asymmetricDown": 2.5,
-                "description": "恐慌踩踏 - 下跌时情绪放大2.5倍"
+                "smartMoneyStrength": 0.0,
+                "trendFollowerStrength": 0.0,
+                "fomoStrength": 0.0,
+                "asymmetricDown": 1.0,
+                "description": "恐慌踩踏 - [调试模式禁用]"
             },
             "shortSqueeze": {
-                "smartMoneyStrength": -0.5,
-                "trendFollowerStrength": 0.5,
-                "fomoStrength": 0.8,
+                "smartMoneyStrength": 0.0,
+                "trendFollowerStrength": 0.0,
+                "fomoStrength": 0.0,
                 "asymmetricDown": 1.0,
-                "description": "轧空风暴 - 聪明钱被迫反向操作"
+                "description": "轧空风暴 - [调试模式禁用]"
             }
         }
     },
-    "//_7": "=== 盘中新闻配置 ===",
+    "//_7": "=== 盘中新闻配置 - [保留启用] ===",
     "intradayNews": {
         "enabled": true,
         "_comment_enabled": "是否启用盘中突发新闻",
@@ -91,30 +92,32 @@
         "minNewsIntervalTicks": 1800,
         "_comment_minNewsIntervalTicks": "最小新闻触发间隔（ticks）| 默认: 1800"
     },
-    "//_8": "=== 虚拟流量配置 ===",
+    "//_8": "=== 虚拟流量配置 - [调试模式禁用] ===",
     "virtualFlow": {
-        "liquidityCoefficient": 10.0,
-        "_comment_liquidityCoefficient": "流动性系数 | 默认: 10.0",
-        "maxFlowPerTick": 500,
-        "_comment_maxFlowPerTick": "每tick最大流量 | 默认: 500"
+        "liquidityCoefficient": 0.0,
+        "_comment_liquidityCoefficient": "流动性系数 | 默认: 10.0 | [调试模式禁用]",
+        "maxFlowPerTick": 0,
+        "_comment_maxFlowPerTick": "每tick最大流量 | 默认: 500 | [调试模式禁用]"
     },
-    "//_9": "=== NPC代理配置 ===",
+    "//_9": "=== NPC代理配置 - [调试模式禁用] ===",
     "npcAgents": {
         "smartMoney": {
-            "baseStrength": 0.05,
-            "_comment_baseStrength": "基础强度 | 默认: 0.05",
+            "baseStrength": 0.0,
+            "_comment_baseStrength": "基础强度 | 默认: 0.05 | [调试模式禁用]",
             "threshold": 0.5,
             "_comment_threshold": "阈值 | 默认: 0.5",
             "movingAveragePeriod": 20,
             "_comment_movingAveragePeriod": "移动平均周期 | 默认: 20"
         },
         "trendFollowers": {
-            "baseStrength": 0.05,
+            "baseStrength": 0.0,
+            "_comment_baseStrength": "[调试模式禁用]",
             "threshold": 0.5,
             "movingAveragePeriod": 20
         },
         "fomoTraders": {
-            "baseStrength": 0.05,
+            "baseStrength": 0.0,
+            "_comment_baseStrength": "[调试模式禁用]",
             "threshold": 0.5,
             "movingAveragePeriod": 20
         }

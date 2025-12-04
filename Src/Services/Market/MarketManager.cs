@@ -1,11 +1,17 @@
-using System;
+﻿using System;
+using StardewCapital.Core.Futures.Domain;
+using StardewCapital.Core.Futures.Services;
 using System.Collections.Generic;
+using StardewCapital.Core.Futures.Domain;
+using StardewCapital.Core.Futures.Services;
 using System.Linq;
-using StardewCapital.Core.Time;
-using StardewCapital.Domain.Instruments;
-using StardewCapital.Domain.Market;
+using StardewCapital.Core.Futures.Domain;
+using StardewCapital.Core.Futures.Services;
+using StardewCapital.Core.Common.Time;
+using StardewCapital.Core.Futures.Domain.Instruments;
+using StardewCapital.Core.Futures.Domain.Market;
 using StardewCapital.Services.Pricing;
-using StardewCapital.Services.News;
+using StardewCapital.Core.Futures.Data;
 using StardewCapital.Services.Trading;
 using StardewModdingAPI;
 using StardewValley;
@@ -29,6 +35,7 @@ namespace StardewCapital.Services.Market
         private readonly MarketStateManager _marketStateManager;
         private readonly DailyMarketOpener _dailyMarketOpener;
         private readonly NewsSchedulePlayer _newsSchedulePlayer;
+        private readonly IntradayNewsImpactService _newsImpactService;
         private readonly ModConfig _config;
         private ClearingService? _clearingService;
         
@@ -41,6 +48,7 @@ namespace StardewCapital.Services.Market
             MarketStateManager marketStateManager,
             DailyMarketOpener dailyMarketOpener,
             NewsSchedulePlayer newsSchedulePlayer,
+            IntradayNewsImpactService newsImpactService,
             ModConfig config)
         {
             _monitor = monitor;
@@ -49,6 +57,7 @@ namespace StardewCapital.Services.Market
             _marketStateManager = marketStateManager;
             _dailyMarketOpener = dailyMarketOpener;
             _newsSchedulePlayer = newsSchedulePlayer;
+            _newsImpactService = newsImpactService;
             _config = config;
             
             _instruments = new List<IInstrument>();
@@ -149,15 +158,15 @@ namespace StardewCapital.Services.Market
         /// <summary>
         /// 获取当前季节
         /// </summary>
-        private Domain.Market.Season GetCurrentSeason()
+        private StardewCapital.Core.Futures.Domain.Market.Season GetCurrentSeason()
         {
             return Game1.currentSeason?.ToLower() switch
             {
-                "spring" => Domain.Market.Season.Spring,
-                "summer" => Domain.Market.Season.Summer,
-                "fall" => Domain.Market.Season.Fall,
-                "winter" => Domain.Market.Season.Winter,
-                _ => Domain.Market.Season.Spring
+                "spring" => StardewCapital.Core.Futures.Domain.Market.Season.Spring,
+                "summer" => StardewCapital.Core.Futures.Domain.Market.Season.Summer,
+                "fall" => StardewCapital.Core.Futures.Domain.Market.Season.Fall,
+                "winter" => StardewCapital.Core.Futures.Domain.Market.Season.Winter,
+                _ => StardewCapital.Core.Futures.Domain.Market.Season.Spring
             };
         }
 
@@ -281,3 +290,7 @@ namespace StardewCapital.Services.Market
         }
     }
 }
+
+
+
+

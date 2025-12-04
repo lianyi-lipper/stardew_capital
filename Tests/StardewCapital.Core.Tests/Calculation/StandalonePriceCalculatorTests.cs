@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Xunit;
-using StardewCapital.Core.Calculation;
-using StardewCapital.Core.Models;
-using StardewCapital.Domain.Market;
-using StardewCapital.Services.News;
-using StardewCapital.Config;
+using StardewCapital.Core.Futures.Calculation;
+using StardewCapital.Core.Futures.Models;
+using StardewCapital.Core.Futures.Domain.Market;
+using StardewCapital.Core.Futures.Data;
+using StardewCapital.Core.Futures.Config;
 
 namespace StardewCapital.Core.Tests.Calculation
 {
@@ -269,3 +269,4 @@ namespace StardewCapital.Core.Tests.Calculation
         #endregion
     }
 }
+

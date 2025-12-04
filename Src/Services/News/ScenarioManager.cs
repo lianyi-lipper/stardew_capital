@@ -1,11 +1,11 @@
-// ============================================================================
+﻿// ============================================================================
 // 星露谷资本 (Stardew Capital)
 // 模块：市场剧本管理器
 // 作者：Stardew Capital Team
 // 用途：管理市场情绪剧本的切换和参数配置（模型五配套服务）
 // ============================================================================
 
-using StardewCapital.Domain.Market;
+using StardewCapital.Core.Futures.Domain.Market;
 using StardewModdingAPI;
 using System;
 using System.Collections.Generic;
@@ -205,3 +205,4 @@ namespace StardewCapital.Services.News
         }
     }
 }
+

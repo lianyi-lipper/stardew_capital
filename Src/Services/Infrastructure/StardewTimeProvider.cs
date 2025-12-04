@@ -1,4 +1,4 @@
-using StardewCapital.Core.Time;
+﻿using StardewCapital.Core.Common.Time;
 using StardewValley;
 
 namespace StardewCapital.Services.Infrastructure
@@ -58,3 +58,4 @@ namespace StardewCapital.Services.Infrastructure
         }
     }
 }
+

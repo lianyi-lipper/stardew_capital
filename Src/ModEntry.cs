@@ -1,14 +1,18 @@
-using System;
+﻿using System;
+using StardewCapital.Core.Futures.Services;
 using StardewCapital.Core.Time;
+using StardewCapital.Core.Common.Time;
 using StardewCapital.Services.Market;
 using StardewCapital.Services.Pricing;
 using StardewCapital.Services.Trading;
-using StardewCapital.Services.News;
+using StardewCapital.Core.Futures.Data;
 using StardewCapital.Services.Infrastructure;
+using StardewCapital.Integration.Logging;
 using StardewCapital.UI;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewCapital.Services.News;
 
 namespace StardewCapital
 {
@@ -57,12 +61,15 @@ namespace StardewCapital
         /// <param name="helper">SMAPI提供的Helper接口</param>
         public override void Entry(IModHelper helper)
         {
-            // 0. Load Config
+            // 0. Create logger adapter for decoupled services
+            var logger = new SmapiLoggerAdapter(Monitor);
+            
+            // 0.1 Load Config
             _config = helper.ReadConfig<ModConfig>();
             _lastKnownConfig = helper.ReadConfig<ModConfig>(); // 保存初始配置用于检测变更
             
             // Load Market Rules (New Architecture) - Moved up for dependency injection
-            var marketRules = helper.Data.ReadJsonFile<Config.MarketRules>("Assets/market_rules.json") ?? new Config.MarketRules();
+            var marketRules = helper.Data.ReadJsonFile<StardewCapital.Core.Futures.Config.MarketRules>("Assets/market_rules.json") ?? new StardewCapital.Core.Futures.Config.MarketRules();
             Monitor.Log($"[MarketRules] Loaded. RiskFreeRate={marketRules.Macro.RiskFreeRate}, Decay={marketRules.MarketMicrostructure.DecayRate}", LogLevel.Info);
 
             // 1. Initialize Core Services
@@ -73,9 +80,9 @@ namespace StardewCapital
             _convenienceYieldService = new ConvenienceYieldService(Monitor);
             _newsGenerator = new NewsGenerator(helper, Monitor);
             
-            // 1.5 Initialize Impact System (Phase 9)
+            // 1.5 Initialize Impact System (Phase 9) - Use ILogger
             _scenarioManager = new ScenarioManager(Monitor);
-            _impactService = new ImpactService(Monitor);
+            _impactService = new ImpactService(logger);
             
             // Configure Impact Service using Market Rules
             _impactService.Configure(marketRules.MarketMicrostructure);
@@ -97,12 +104,12 @@ namespace StardewCapital
             // 3. Initialize Market Services
             var marketTimeCalculator = new Services.Market.MarketTimeCalculator();
             
-            // 3.5 Initialize NPC Agent Manager
-            var npcAgentManager = new Services.Market.NPCAgentManager(Monitor, marketRules);
+            // 3.5 Initialize NPC Agent Manager - Use ILogger
+            var npcAgentManager = new NPCAgentManager(logger, marketRules);
             Monitor.Log("[NPCAgentManager] Initialized successfully", LogLevel.Info);
             
-            // 4. Initialize Market Manager (with new architecture)
-            var orderBookManager = new OrderBookManager(Monitor, _impactService, null!); // MarketManager set later
+            // 4. Initialize Market Manager (with new architecture) - Use ILogger for decoupled services
+            var orderBookManager = new OrderBookManager(logger, _impactService, null!); // MarketManager set later
             var priceUpdater = new MarketPriceUpdater(
                 Monitor, _clock, _priceEngine, _fundamentalEngine,
                 _convenienceYieldService, _newsGenerator,
@@ -110,7 +117,8 @@ namespace StardewCapital
                 null!, // MarketManager (arg 10)
                 orderBookManager, // OrderBookManager (arg 11)
                 marketRules, // MarketRules (arg 12)
-                npcAgentManager); // NPCAgentManager (arg 13)
+                npcAgentManager, // NPCAgentManager (arg 13)
+                logger); // ILogger (arg 14)
             
             var dailyMarketOpener = new Services.Market.DailyMarketOpener(
                 Monitor,
@@ -130,6 +138,9 @@ namespace StardewCapital
                 marketTimeCalculator
             );
             
+            // Create IntradayNewsImpactService for price shock
+            var newsImpactService = new Services.Market.IntradayNewsImpactService(Monitor);
+            
             _marketManager = new MarketManager(
                 Monitor, 
                 orderBookManager, 
@@ -137,6 +148,7 @@ namespace StardewCapital
                 marketStateManager,
                 dailyMarketOpener,
                 newsSchedulePlayer,
+                newsImpactService,
                 _config
             );
             
@@ -152,6 +164,15 @@ namespace StardewCapital
             var dailyOpenerField = typeof(Services.Market.DailyMarketOpener).GetField("_marketManager",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             dailyOpenerField?.SetValue(dailyMarketOpener, _marketManager);
+            
+            // Fix NewsSchedulePlayer circular reference
+            var newsSchedulePlayerField = typeof(Services.Market.NewsSchedulePlayer).GetField("_newsImpactService",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            newsSchedulePlayerField?.SetValue(newsSchedulePlayer, newsImpactService);
+            
+            var newsScheduleMarketManagerField = typeof(Services.Market.NewsSchedulePlayer).GetField("_marketManager",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            newsScheduleMarketManagerField?.SetValue(newsSchedulePlayer, _marketManager);
 
             // 3. Initialize Brokerage Service
             _brokerageService = new BrokerageService(_marketManager, _impactService, Monitor);
@@ -345,3 +366,11 @@ namespace StardewCapital
         }
     }
 }
+
+
+
+
+
+
+
+
