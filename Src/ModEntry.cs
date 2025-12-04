@@ -1,5 +1,6 @@
 ﻿using System;
 using StardewCapital.Core.Futures.Services;
+using StardewCapital.Services.News;
 using StardewCapital.Core.Time;
 using StardewCapital.Core.Common.Time;
 using StardewCapital.Services.Market;
@@ -12,7 +13,7 @@ using StardewCapital.UI;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
-using StardewCapital.Services.News;
+
 
 namespace StardewCapital
 {
@@ -78,7 +79,7 @@ namespace StardewCapital
             _priceEngine = new PriceEngine(_clock, marketRules);
             _fundamentalEngine = new FundamentalEngine(Monitor, Helper);
             _convenienceYieldService = new ConvenienceYieldService(Monitor);
-            _newsGenerator = new NewsGenerator(helper, Monitor);
+            _newsGenerator = new NewsGenerator(System.IO.Path.Combine(Helper.DirectoryPath, "Assets", "data", "news_config.json"), new SmapiLoggerAdapter(Monitor));
             
             // 1.5 Initialize Impact System (Phase 9) - Use ILogger
             _scenarioManager = new ScenarioManager(Monitor);
@@ -139,7 +140,7 @@ namespace StardewCapital
             );
             
             // Create IntradayNewsImpactService for price shock
-            var newsImpactService = new Services.Market.IntradayNewsImpactService(Monitor);
+            var newsImpactService = new Core.Futures.Services.IntradayNewsImpactService(new SmapiLoggerAdapter(Monitor));
             
             _marketManager = new MarketManager(
                 Monitor, 
@@ -366,6 +367,8 @@ namespace StardewCapital
         }
     }
 }
+
+
 
 
 

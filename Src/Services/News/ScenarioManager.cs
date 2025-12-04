@@ -8,7 +8,9 @@
 using StardewCapital.Core.Futures.Domain.Market;
 using StardewModdingAPI;
 using System;
+using StardewCapital.Core.Futures.Services;
 using System.Collections.Generic;
+using StardewCapital.Core.Futures.Services;
 
 namespace StardewCapital.Services.News
 {
@@ -205,4 +207,5 @@ namespace StardewCapital.Services.News
         }
     }
 }
+
 

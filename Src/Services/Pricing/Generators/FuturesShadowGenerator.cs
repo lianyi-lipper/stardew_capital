@@ -1,5 +1,5 @@
 ﻿using System;
-using StardewCapital.Services.News;
+using StardewCapital.Core.Futures.Services;
 using StardewCapital.Core.Futures.Config;
 using StardewCapital.Core.Futures.Models;
 using StardewCapital.Core.Futures.Domain.Instruments;
@@ -58,5 +58,6 @@ namespace StardewCapital.Services.Pricing.Generators
         }
     }
 }
+
 
 
