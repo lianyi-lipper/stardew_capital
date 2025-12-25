@@ -1,0 +1,506 @@
+{
+    "commodities": [
+        {
+            "id": "PARSNIP",
+            "name": "防风草",
+            "item_id": "24",
+            "description": "基础春季作物，市场流动性高，适合新手交易",
+            "category": "vegetables",
+            "created_at": "2025-12-25",
+            "region_prices": {
+                "pelican_town": {
+                    "base_price": 35,
+                    "availability": "common",
+                    "description": "本地农场大量种植"
+                },
+                "calico_desert": {
+                    "base_price": 55,
+                    "availability": "rare",
+                    "description": "沙漠环境不适合生长，依赖进口"
+                },
+                "ginger_island": {
+                    "base_price": 45,
+                    "availability": "uncommon",
+                    "description": "热带气候可少量种植"
+                }
+            },
+            "trade_settings": {
+                "contract_type": "monthly",
+                "contract_size": 100,
+                "tick_size": 0.01,
+                "initial_margin_ratio": 0.10,
+                "maintenance_margin_ratio": 0.08,
+                "price_limits": {
+                    "min": 5,
+                    "max": 200
+                }
+            },
+            "price_behavior": {
+                "base_volatility": 0.02,
+                "intraday_volatility": 0.01,
+                "volatility_clustering": 0.6,
+                "mean_reversion_speed": 0.15,
+                "momentum_factor": 0.2,
+                "jump_probability": 0.01,
+                "jump_magnitude": 0.03
+            },
+            "seasonality": {
+                "grow_seasons": [
+                    "Spring"
+                ],
+                "off_season_multiplier": 2.5,
+                "season_volatility": {
+                    "Spring": 0.8,
+                    "Summer": 1.3,
+                    "Fall": 1.5,
+                    "Winter": 2.0
+                }
+            },
+            "supply_demand": {
+                "base_demand": 100000,
+                "base_supply": 100000,
+                "storage_cost_per_day": 0.005,
+                "demand_elasticity": 1.2
+            },
+            "market_structure": {
+                "base_liquidity": 100000,
+                "impact_coefficient": 0.005,
+                "base_spread_ratio": 0.01,
+                "turnover_rate": 0.08
+            },
+            "event_sensitivity": {
+                "weather": 0.8,
+                "pest": 0.9,
+                "festival": 0.2,
+                "npc_demand": 0.4
+            },
+            "correlations": [
+                {
+                    "commodity_id": "POTATO",
+                    "type": "substitute",
+                    "strength": 0.3
+                },
+                {
+                    "commodity_id": "CAULIFLOWER",
+                    "type": "substitute",
+                    "strength": 0.25
+                }
+            ]
+        },
+        {
+            "id": "BLUEBERRY",
+            "name": "蓝莓",
+            "item_id": "258",
+            "description": "夏季高价值作物，可连续采摘，是蓝莓酒和果酱的原料",
+            "category": "fruits",
+            "created_at": "2025-12-25",
+            "region_prices": {
+                "pelican_town": {
+                    "base_price": 50,
+                    "availability": "common",
+                    "description": "夏季大量供应"
+                },
+                "calico_desert": {
+                    "base_price": 85,
+                    "availability": "rare",
+                    "description": "沙漠高温难以存活"
+                },
+                "ginger_island": {
+                    "base_price": 40,
+                    "availability": "abundant",
+                    "description": "热带气候全年可种植"
+                }
+            },
+            "trade_settings": {
+                "contract_type": "monthly",
+                "contract_size": 100,
+                "tick_size": 0.01,
+                "initial_margin_ratio": 0.10,
+                "maintenance_margin_ratio": 0.08,
+                "price_limits": {
+                    "min": 10,
+                    "max": 300
+                }
+            },
+            "price_behavior": {
+                "base_volatility": 0.025,
+                "intraday_volatility": 0.012,
+                "volatility_clustering": 0.65,
+                "mean_reversion_speed": 0.12,
+                "momentum_factor": 0.35,
+                "jump_probability": 0.015,
+                "jump_magnitude": 0.04
+            },
+            "seasonality": {
+                "grow_seasons": [
+                    "Summer"
+                ],
+                "off_season_multiplier": 3.0,
+                "season_volatility": {
+                    "Spring": 1.5,
+                    "Summer": 0.7,
+                    "Fall": 1.8,
+                    "Winter": 2.2
+                }
+            },
+            "supply_demand": {
+                "base_demand": 120000,
+                "base_supply": 120000,
+                "storage_cost_per_day": 0.008,
+                "demand_elasticity": 1.0
+            },
+            "market_structure": {
+                "base_liquidity": 80000,
+                "impact_coefficient": 0.008,
+                "base_spread_ratio": 0.012,
+                "turnover_rate": 0.06
+            },
+            "event_sensitivity": {
+                "weather": 0.7,
+                "pest": 0.85,
+                "festival": 0.3,
+                "npc_demand": 0.5
+            },
+            "correlations": [
+                {
+                    "commodity_id": "BLUEBERRY_WINE",
+                    "type": "input",
+                    "strength": 0.8
+                },
+                {
+                    "commodity_id": "BLUEBERRY_JAM",
+                    "type": "input",
+                    "strength": 0.7
+                },
+                {
+                    "commodity_id": "STRAWBERRY",
+                    "type": "substitute",
+                    "strength": 0.35
+                },
+                {
+                    "commodity_id": "MELON",
+                    "type": "substitute",
+                    "strength": 0.25
+                }
+            ]
+        },
+        {
+            "id": "BLUEBERRY_WINE",
+            "name": "蓝莓酒",
+            "item_id": "348",
+            "description": "由蓝莓酿制的高级酒品，需要7天发酵",
+            "category": "artisan",
+            "created_at": "2025-12-25",
+            "region_prices": {
+                "pelican_town": {
+                    "base_price": 150,
+                    "availability": "uncommon",
+                    "description": "本地酒庄少量生产"
+                },
+                "calico_desert": {
+                    "base_price": 180,
+                    "availability": "rare",
+                    "description": "沙漠商人偶尔贩卖"
+                },
+                "ginger_island": {
+                    "base_price": 130,
+                    "availability": "common",
+                    "description": "度假胜地需求旺盛"
+                }
+            },
+            "trade_settings": {
+                "contract_type": "monthly",
+                "contract_size": 50,
+                "tick_size": 0.1,
+                "initial_margin_ratio": 0.12,
+                "maintenance_margin_ratio": 0.10,
+                "price_limits": {
+                    "min": 50,
+                    "max": 500
+                }
+            },
+            "price_behavior": {
+                "base_volatility": 0.018,
+                "intraday_volatility": 0.008,
+                "volatility_clustering": 0.5,
+                "mean_reversion_speed": 0.20,
+                "momentum_factor": 0.25,
+                "jump_probability": 0.008,
+                "jump_magnitude": 0.03
+            },
+            "seasonality": {
+                "grow_seasons": [],
+                "off_season_multiplier": 1.0,
+                "season_volatility": {
+                    "Spring": 1.0,
+                    "Summer": 0.9,
+                    "Fall": 1.1,
+                    "Winter": 1.2
+                }
+            },
+            "supply_demand": {
+                "base_demand": 50000,
+                "base_supply": 40000,
+                "storage_cost_per_day": 0.002,
+                "demand_elasticity": 0.8
+            },
+            "market_structure": {
+                "base_liquidity": 40000,
+                "impact_coefficient": 0.012,
+                "base_spread_ratio": 0.015,
+                "turnover_rate": 0.04
+            },
+            "event_sensitivity": {
+                "weather": 0.1,
+                "pest": 0.2,
+                "festival": 0.7,
+                "npc_demand": 0.8
+            },
+            "correlations": [
+                {
+                    "commodity_id": "BLUEBERRY",
+                    "type": "output",
+                    "strength": 0.8
+                },
+                {
+                    "commodity_id": "STRAWBERRY_WINE",
+                    "type": "substitute",
+                    "strength": 0.4
+                }
+            ]
+        },
+        {
+            "id": "BLUEBERRY_JAM",
+            "name": "蓝莓果酱",
+            "item_id": "344",
+            "description": "由蓝莓制作的甜美果酱，广受欢迎的早餐食品",
+            "category": "artisan",
+            "created_at": "2025-12-25",
+            "region_prices": {
+                "pelican_town": {
+                    "base_price": 100,
+                    "availability": "common",
+                    "description": "家庭主妇自制出售"
+                },
+                "calico_desert": {
+                    "base_price": 130,
+                    "availability": "uncommon",
+                    "description": "进口货物价格较高"
+                },
+                "ginger_island": {
+                    "base_price": 90,
+                    "availability": "common",
+                    "description": "热带水果制品丰富"
+                }
+            },
+            "trade_settings": {
+                "contract_type": "monthly",
+                "contract_size": 50,
+                "tick_size": 0.1,
+                "initial_margin_ratio": 0.10,
+                "maintenance_margin_ratio": 0.08,
+                "price_limits": {
+                    "min": 30,
+                    "max": 350
+                }
+            },
+            "price_behavior": {
+                "base_volatility": 0.015,
+                "intraday_volatility": 0.007,
+                "volatility_clustering": 0.45,
+                "mean_reversion_speed": 0.22,
+                "momentum_factor": 0.20,
+                "jump_probability": 0.005,
+                "jump_magnitude": 0.025
+            },
+            "seasonality": {
+                "grow_seasons": [],
+                "off_season_multiplier": 1.0,
+                "season_volatility": {
+                    "Spring": 1.0,
+                    "Summer": 0.85,
+                    "Fall": 1.05,
+                    "Winter": 1.1
+                }
+            },
+            "supply_demand": {
+                "base_demand": 60000,
+                "base_supply": 55000,
+                "storage_cost_per_day": 0.003,
+                "demand_elasticity": 0.9
+            },
+            "market_structure": {
+                "base_liquidity": 50000,
+                "impact_coefficient": 0.010,
+                "base_spread_ratio": 0.012,
+                "turnover_rate": 0.05
+            },
+            "event_sensitivity": {
+                "weather": 0.1,
+                "pest": 0.15,
+                "festival": 0.5,
+                "npc_demand": 0.7
+            },
+            "correlations": [
+                {
+                    "commodity_id": "BLUEBERRY",
+                    "type": "output",
+                    "strength": 0.7
+                },
+                {
+                    "commodity_id": "STRAWBERRY_JAM",
+                    "type": "substitute",
+                    "strength": 0.5
+                }
+            ]
+        },
+        {
+            "id": "GOLD",
+            "name": "黄金",
+            "item_id": "384",
+            "description": "贵金属，永续合约，对冲通胀和市场风险的工具",
+            "category": "precious_metals",
+            "created_at": "2025-12-25",
+            "region_prices": {
+                "pelican_town": {
+                    "base_price": 250,
+                    "availability": "rare",
+                    "description": "矿井偶尔产出"
+                },
+                "calico_desert": {
+                    "base_price": 270,
+                    "availability": "uncommon",
+                    "description": "沙漠矿脉蕴藏丰富"
+                },
+                "ginger_island": {
+                    "base_price": 280,
+                    "availability": "rare",
+                    "description": "火山矿脉偶有发现"
+                }
+            },
+            "trade_settings": {
+                "contract_type": "perpetual",
+                "contract_size": 10,
+                "tick_size": 0.5,
+                "initial_margin_ratio": 0.15,
+                "maintenance_margin_ratio": 0.12,
+                "price_limits": {
+                    "min": 100,
+                    "max": 1000
+                }
+            },
+            "price_behavior": {
+                "base_volatility": 0.012,
+                "intraday_volatility": 0.006,
+                "volatility_clustering": 0.75,
+                "mean_reversion_speed": 0.05,
+                "momentum_factor": 0.45,
+                "jump_probability": 0.02,
+                "jump_magnitude": 0.05
+            },
+            "seasonality": {
+                "grow_seasons": [],
+                "off_season_multiplier": 1.0,
+                "season_volatility": {
+                    "Spring": 1.0,
+                    "Summer": 1.0,
+                    "Fall": 1.0,
+                    "Winter": 1.0
+                }
+            },
+            "supply_demand": {
+                "base_demand": 30000,
+                "base_supply": 25000,
+                "storage_cost_per_day": 0.001,
+                "demand_elasticity": 0.5
+            },
+            "market_structure": {
+                "base_liquidity": 200000,
+                "impact_coefficient": 0.002,
+                "base_spread_ratio": 0.005,
+                "turnover_rate": 0.10
+            },
+            "event_sensitivity": {
+                "weather": 0.0,
+                "pest": 0.0,
+                "festival": 0.1,
+                "npc_demand": 0.3
+            },
+            "correlations": [
+                {
+                    "commodity_id": "IRIDIUM",
+                    "type": "substitute",
+                    "strength": 0.5
+                }
+            ]
+        }
+    ],
+    "regions": {
+        "pelican_town": {
+            "id": "pelican_town",
+            "name": "鹈鹕镇",
+            "is_default": true,
+            "description": "温带农业小镇，大多数作物的主要产地"
+        },
+        "calico_desert": {
+            "id": "calico_desert",
+            "name": "卡利科沙漠",
+            "is_default": false,
+            "description": "干旱沙漠，农产品稀缺但矿产丰富"
+        },
+        "ginger_island": {
+            "id": "ginger_island",
+            "name": "姜岛",
+            "is_default": false,
+            "description": "热带海岛，全年可种植，旅游业发达"
+        }
+    },
+    "categories": {
+        "vegetables": [
+            "PARSNIP",
+            "CAULIFLOWER",
+            "POTATO",
+            "PUMPKIN"
+        ],
+        "fruits": [
+            "BLUEBERRY",
+            "STRAWBERRY",
+            "MELON",
+            "STARFRUIT"
+        ],
+        "artisan": [
+            "BLUEBERRY_WINE",
+            "BLUEBERRY_JAM",
+            "STRAWBERRY_WINE",
+            "STRAWBERRY_JAM"
+        ],
+        "precious_metals": [
+            "GOLD",
+            "IRIDIUM"
+        ]
+    },
+    "correlation_types": {
+        "input": {
+            "description": "原料与产品关系，原料涨价导致产品成本上升",
+            "propagation_delay_ticks": 5,
+            "decay_factor": 0.9
+        },
+        "output": {
+            "description": "产品与原料的反向关系",
+            "propagation_delay_ticks": 3,
+            "decay_factor": 0.85
+        },
+        "substitute": {
+            "description": "替代品关系，一方涨价导致另一方需求增加",
+            "propagation_delay_ticks": 10,
+            "decay_factor": 0.7
+        }
+    },
+    "metadata": {
+        "schema_version": "1.0",
+        "game_version": "1.5",
+        "last_updated": "2025-12-25",
+        "author": "StardewCapital Dev Team",
+        "notes": "包含5个示例商品：防风草、蓝莓、蓝莓酒、蓝莓果酱、黄金"
+    }
+}

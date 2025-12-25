@@ -1,0 +1,163 @@
+{
+    "market_settings": {
+        "version": "1.0",
+        "created_at": "2025-12-25",
+        "trading_hours": {
+            "open_time": 600,
+            "close_time": 2200,
+            "description": "交易时段为游戏时间 6:00 - 22:00"
+        },
+        "time_config": {
+            "ticks_per_day": 100,
+            "minutes_per_tick": 10,
+            "description": "每天 100 次价格更新，每 10 分钟更新一次"
+        },
+        "price_limits": {
+            "enabled": true,
+            "daily_limit_percent": 10,
+            "description": "涨跌停限制：单日涨跌幅不超过 ±10%"
+        },
+        "market_impact": {
+            "impact_decay_rate": 0.95,
+            "max_impact_percent": 5,
+            "description": "玩家交易对价格的影响会逐渐衰减"
+        }
+    },
+    "news_timing": {
+        "description": "控制新闻发布的时间规则",
+        "time_periods": {
+            "morning": {
+                "start_time": 600,
+                "end_time": 1200,
+                "news_weight": 1.5,
+                "description": "早间 6:00-12:00，概率×1.5（例：10%→15%）"
+            },
+            "afternoon": {
+                "start_time": 1200,
+                "end_time": 1800,
+                "news_weight": 1.2,
+                "description": "午间 12:00-18:00，概率×1.2"
+            },
+            "evening": {
+                "start_time": 1800,
+                "end_time": 2200,
+                "news_weight": 0.5,
+                "description": "晚间 18:00-22:00，概率×0.5（减半）"
+            },
+            "night": {
+                "start_time": 2200,
+                "end_time": 600,
+                "news_weight": 0.2,
+                "description": "夜间 22:00-6:00，概率×0.2（减80%）"
+            }
+        },
+        "severity_time_modifiers": {
+            "critical": {
+                "morning_weight": 2.0,
+                "afternoon_weight": 1.5,
+                "evening_weight": 0.5,
+                "night_weight": 0.1,
+                "description": "紧急新闻主要在白天发生"
+            },
+            "high": {
+                "morning_weight": 1.5,
+                "afternoon_weight": 1.3,
+                "evening_weight": 0.7,
+                "night_weight": 0.3
+            },
+            "medium": {
+                "morning_weight": 1.2,
+                "afternoon_weight": 1.1,
+                "evening_weight": 0.8,
+                "night_weight": 0.5
+            },
+            "low": {
+                "morning_weight": 1.0,
+                "afternoon_weight": 1.0,
+                "evening_weight": 1.0,
+                "night_weight": 0.8,
+                "description": "普通新闻全天均匀分布"
+            }
+        },
+        "check_intervals": {
+            "regular_check_times": [
+                700,
+                900,
+                1200,
+                1500,
+                1800
+            ],
+            "description": "在这些时间点检查是否有新闻触发",
+            "breaking_news_any_time": true,
+            "breaking_news_description": "severity 为 critical 的突发新闻可在任意时间触发"
+        }
+    },
+    "seasons": {
+        "days_per_season": 28,
+        "seasons_per_year": 4,
+        "season_names": [
+            "Spring",
+            "Summer",
+            "Fall",
+            "Winter"
+        ],
+        "season_names_cn": [
+            "春季",
+            "夏季",
+            "秋季",
+            "冬季"
+        ]
+    },
+    "contract_settings": {
+        "default_expiration_day": 28,
+        "contract_types": {
+            "monthly": {
+                "duration_days": 28,
+                "description": "月度合约，每季度到期"
+            },
+            "yearly": {
+                "duration_days": 112,
+                "description": "年度合约，每年到期"
+            },
+            "perpetual": {
+                "duration_days": -1,
+                "description": "永续合约，无到期日"
+            }
+        }
+    },
+    "regions": {
+        "default_region": "pelican_town",
+        "available_regions": [
+            {
+                "id": "pelican_town",
+                "name": "鹈鹕镇",
+                "unlock_condition": "none",
+                "description": "默认交易所"
+            },
+            {
+                "id": "calico_desert",
+                "name": "卡利科沙漠",
+                "unlock_condition": "bus_repaired",
+                "description": "需要修复公交车后解锁"
+            },
+            {
+                "id": "ginger_island",
+                "name": "姜岛",
+                "unlock_condition": "boat_repaired",
+                "description": "需要修复威利的船后解锁"
+            }
+        ]
+    },
+    "simulation_settings": {
+        "random_seed": null,
+        "description": "设为 null 使用随机种子，设为数字可复现结果",
+        "enable_logging": false,
+        "log_level": "info"
+    },
+    "metadata": {
+        "schema_version": "1.0",
+        "game_version": "1.5",
+        "last_updated": "2025-12-25",
+        "author": "StardewCapital Dev Team"
+    }
+}

@@ -1,0 +1,279 @@
+{
+  "news_items": [
+    {
+      "id": "pest_crisis_001",
+      "created_at": "2025-12-25",
+      "title": "害虫危机席卷鹈鹕镇！",
+      "description": "大量害虫入侵农田，本季作物产量预计大幅下降",
+      "content": "鹈鹕镇农业部门今日发布紧急公告：一种来自铁路以南的害虫正在迅速蔓延，已有多处农田受到影响。专家建议农民们做好防护措施。",
+      "severity": "high",
+      "news_type": "supply",
+      "impact": {
+        "demand_delta": 0,
+        "supply_delta": -2000,
+        "price_multiplier": 1.0,
+        "volatility_delta": 0.01,
+        "confidence_delta": -0.15,
+        "is_permanent": true
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables"
+        ],
+        "is_global": false
+      },
+      "timing": {
+        "trigger_season": "Any",
+        "trigger_day_range": [
+          1,
+          28
+        ],
+        "duration_days": 7
+      },
+      "conditions": {
+        "probability": 0.05,
+        "prerequisites": [],
+        "random_impact_range": [
+          -500,
+          500
+        ]
+      },
+      "follow_up": null
+    },
+    {
+      "id": "bumper_harvest_001",
+      "created_at": "2025-12-25",
+      "title": "今年迎来大丰收！",
+      "description": "风调雨顺，各地农场产量超预期",
+      "content": "经历了一个温和的季节后，鹈鹕镇及周边地区的农场都迎来了丰收。市场上农产品供应充足，价格有望回落。",
+      "severity": "medium",
+      "news_type": "supply",
+      "impact": {
+        "demand_delta": 0,
+        "supply_delta": 1500,
+        "price_multiplier": 1.0,
+        "volatility_delta": -0.005,
+        "confidence_delta": 0.1,
+        "is_permanent": true
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables",
+          "fruits"
+        ],
+        "is_global": false
+      },
+      "timing": {
+        "trigger_season": "Any",
+        "trigger_day_range": [
+          15,
+          28
+        ],
+        "duration_days": 7
+      },
+      "conditions": {
+        "probability": 0.08,
+        "prerequisites": [],
+        "random_impact_range": [
+          -300,
+          300
+        ]
+      },
+      "follow_up": null
+    },
+    {
+      "id": "zuzu_order_001",
+      "created_at": "2025-12-25",
+      "title": "祖祖城大规模采购订单！",
+      "description": "祖祖城连锁餐厅下达大宗采购订单",
+      "content": "「星光餐厅」连锁品牌宣布在祖祖城新开10家分店，急需大量新鲜蔬菜和水果供应。这一消息刺激了农产品需求。",
+      "severity": "high",
+      "news_type": "demand",
+      "impact": {
+        "demand_delta": 3000,
+        "supply_delta": 0,
+        "price_multiplier": 1.0,
+        "volatility_delta": 0.008,
+        "confidence_delta": 0.2,
+        "is_permanent": true
+      },
+      "scope": {
+        "affected_items": [
+          "PARSNIP",
+          "CAULIFLOWER"
+        ],
+        "affected_categories": [],
+        "is_global": false
+      },
+      "timing": {
+        "trigger_season": "Spring",
+        "trigger_day_range": [
+          5,
+          20
+        ],
+        "duration_days": 14
+      },
+      "conditions": {
+        "probability": 0.1,
+        "prerequisites": [],
+        "random_impact_range": [
+          -500,
+          1000
+        ]
+      },
+      "follow_up": {
+        "news_id": "zuzu_order_002",
+        "delay_days": 7,
+        "probability": 0.5
+      }
+    },
+    {
+      "id": "zuzu_order_002",
+      "created_at": "2025-12-25",
+      "title": "祖祖城追加订单！",
+      "description": "餐厅反响热烈，采购量翻倍",
+      "content": "由于新店开业大受欢迎，「星光餐厅」决定追加采购订单。农产品需求持续走高。",
+      "severity": "high",
+      "news_type": "demand",
+      "impact": {
+        "demand_delta": 2000,
+        "supply_delta": 0,
+        "price_multiplier": 1.0,
+        "volatility_delta": 0.005,
+        "confidence_delta": 0.15,
+        "is_permanent": true
+      },
+      "scope": {
+        "affected_items": [
+          "PARSNIP",
+          "CAULIFLOWER"
+        ],
+        "affected_categories": [],
+        "is_global": false
+      },
+      "timing": {
+        "trigger_season": "Spring",
+        "trigger_day_range": [
+          12,
+          28
+        ],
+        "duration_days": 10
+      },
+      "conditions": {
+        "probability": 1.0,
+        "prerequisites": [
+          "zuzu_order_001"
+        ],
+        "random_impact_range": [
+          -200,
+          500
+        ]
+      },
+      "follow_up": null
+    },
+    {
+      "id": "drought_001",
+      "created_at": "2025-12-25",
+      "title": "干旱预警发布",
+      "description": "连续高温无雨，农作物面临减产风险",
+      "content": "鹈鹕镇气象站发布干旱黄色预警：未来一周将持续高温少雨天气，提醒农民做好灌溉准备。农业专家预测部分作物可能减产。",
+      "severity": "medium",
+      "news_type": "supply",
+      "impact": {
+        "demand_delta": 0,
+        "supply_delta": -1200,
+        "price_multiplier": 1.0,
+        "volatility_delta": 0.015,
+        "confidence_delta": -0.1,
+        "is_permanent": true
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [
+          "vegetables"
+        ],
+        "is_global": false
+      },
+      "timing": {
+        "trigger_season": "Summer",
+        "trigger_day_range": [
+          10,
+          25
+        ],
+        "duration_days": 10
+      },
+      "conditions": {
+        "probability": 0.12,
+        "prerequisites": [],
+        "random_impact_range": [
+          -300,
+          300
+        ]
+      },
+      "follow_up": null
+    },
+    {
+      "id": "festival_demand_001",
+      "created_at": "2025-12-25",
+      "title": "蛋节临近，需求激增",
+      "description": "一年一度的蛋节即将到来，相关商品需求上涨",
+      "content": "随着蛋节的临近，村民们开始为节日准备。各类农产品的需求出现季节性上涨，特别是用于制作节日食品的原材料。",
+      "severity": "low",
+      "news_type": "demand",
+      "impact": {
+        "demand_delta": 800,
+        "supply_delta": 0,
+        "price_multiplier": 1.0,
+        "volatility_delta": 0.003,
+        "confidence_delta": 0.05,
+        "is_permanent": false
+      },
+      "scope": {
+        "affected_items": [],
+        "affected_categories": [],
+        "is_global": true
+      },
+      "timing": {
+        "trigger_season": "Spring",
+        "trigger_day_range": [
+          13,
+          13
+        ],
+        "duration_days": 1
+      },
+      "conditions": {
+        "probability": 1.0,
+        "prerequisites": [],
+        "random_impact_range": [
+          0,
+          0
+        ]
+      },
+      "follow_up": null
+    }
+  ],
+  "categories": {
+    "vegetables": [
+      "PARSNIP",
+      "CAULIFLOWER",
+      "POTATO",
+      "PUMPKIN"
+    ],
+    "fruits": [
+      "STRAWBERRY",
+      "BLUEBERRY",
+      "MELON",
+      "STARFRUIT"
+    ],
+    "artisan": [],
+    "flowers": []
+  },
+  "metadata": {
+    "schema_version": "1.0",
+    "game_version": "1.5",
+    "last_updated": "2025-12-25",
+    "author": "StardewCapital Dev Team"
+  }
+}
